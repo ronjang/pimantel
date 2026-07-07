@@ -60,7 +60,7 @@ function Solved({
     } else {
       setDownloadingImage(true);
       toast(
-        "Bild wird generiert, einen Moment... (funktioniert in manchen Browsern nicht perfekt)."
+        "Generating image, einen Moment... (funktioniert in manchen Browsern nicht perfekt)."
       );
       return new Promise((resolve) => {
         setTimeout(() => {
@@ -122,7 +122,7 @@ function Solved({
       text: getShareString(),
     };
     let errorMessage =
-      'Teilen leider nicht möglich. Versuch die „Kopieren"-Buttons?';
+      'Share leider nicht möglich. Versuch die "Copy"-Buttons?';
 
     if (withImage) {
       getImageBlob().then((blob: Blob) => {
@@ -154,7 +154,7 @@ function Solved({
 
   function copyVictory(withImage: boolean) {
     if (navigator.clipboard === undefined) {
-      toast.error("Dein Browser unterstützt das Kopieren in die Zwischenablage leider nicht.");
+      toast.error("Dein Browser unterstützt Copy to Clipboard leider nicht.");
     }
     let shareText = getShareString() + "\n\n" + window.location.href;
     let textBlob = new Blob([shareText], { type: "text/plain" });
@@ -168,11 +168,11 @@ function Solved({
             }),
           ])
           .then(() => {
-            toast.success("In die Zwischenablage kopiert!");
+            toast.success("Copied to clipboard!");
           })
           .catch(() => {
             toast.error(
-              'Kopieren leider fehlgeschlagen. Versuch „Kopieren (Text)"?'
+              'Copy leider fehlgeschlagen. Versuch "Copy (text)"?'
             );
           });
       });
@@ -186,10 +186,10 @@ function Solved({
         : navigator.clipboard.writeText(shareText)
       )
         .then(() => {
-          toast.success("In die Zwischenablage kopiert!");
+          toast.success("Copied to clipboard!");
         })
         .catch(() => {
-          toast.error("Kopieren leider fehlgeschlagen.");
+          toast.error("Copy leider fehlgeschlagen.");
         });
     }
   }
@@ -230,13 +230,13 @@ function Solved({
               <input
                 onClick={() => shareVictory(false)}
                 type="button"
-                value="Teilen (Text)"
+                value="Share (text)"
               />
               <input
                 onClick={() => shareVictory(true)}
                 disabled={downloadingImage}
                 type="button"
-                value="Teilen (Text+Bild)"
+                value="Share (text+image)"
               />
             </div>
           )}
@@ -244,21 +244,21 @@ function Solved({
         <input
           onClick={() => copyVictory(false)}
           type="button"
-          value="Kopieren (Text)"
+          value="Copy (text)"
         />
         <input
           onClick={() => copyVictory(true)}
           type="button"
-          value="Kopieren (Bild)"
+          value="Copy (image)"
         />
         <input
           onClick={() => downloadVictory()}
           disabled={downloadingImage}
           type="button"
-          value="Herunterladen"
+          value="Download"
         />
         {exploreMode || (
-          <input onClick={() => explore()} type="button" value="Erkunden" />
+          <input onClick={() => explore()} type="button" value="Explore" />
         )}
       </div>
       {downloadingImage && (

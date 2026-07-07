@@ -1,22 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import wordList from "./data/word_list.json";
+import wordListEn from "./data/word_list.json";
+import wordListDe from "./data/word_list_de.json";
 import { getFloat16 } from "@petamoriken/float16";
 import PlotContainer from "./plot/PlotContainer";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import dayjs from "dayjs";
 import { ArchiveLink } from "./archive/ArchiveLink";
-import MultiplayerBackground from "./MultiplayerBackground";
-import { io, Socket } from "socket.io-client";
-import {
-  ClientEvent,
-  LesserStatsUpdate,
-  ServerEvent,
-  SolveStatus,
-  StatsUpdate,
-} from "./SocketTypes";
-import { Subject } from "rxjs";
 import ArchiveDropdown from "./archive/ArchiveDropdown";
 import SettingsDropdown from "./settings/SettingsDropdown";
 import { Word } from "./guesses/guesses.model";
@@ -26,11 +17,13 @@ import { StatsStatus } from "./stats/stats.model";
 import Guesses from "./guesses/guesses.component";
 // @ts-ignore
 import Plotly from "plotly.js-gl2d-dist-min";
-import ServerPanel from "./server/ServerPanel.component";
+import { GameLanguage, LANGUAGE_CONFIGS } from "./data/languageConfig";
 
-let difficultPimantles: string[] = ["26"];
+// Set to true when a backend is available again
+const MULTIPLAYER_ENABLED = false;
 
 function App() {
+  let [language] = useState<GameLanguage>("de");
   let [secret, setSecret] = useState<Word>();
   let [xValues, setXValues] = useState<number[]>([]);
   let [yValues, setYValues] = useState<number[]>([]);
@@ -51,17 +44,15 @@ function App() {
   let [currentPuzzle, setCurrentPuzzle] = useState<string>("?");
   let [parsedWords, setParsedWords] = useState<Word[]>([]);
   let [guesses, setGuesses] = useState<Word[]>([]);
+  let [languageDataAvailable, setLanguageDataAvailable] = useState<boolean>(true);
   let [settingsOpen, setSettingsOpen] = useState<boolean>(false);
-  let [socketGuessHandler, setSocketGuessHandler] = useState<
-    (x: number, y: number, solvedState: SolveStatus | undefined) => void
-  >(() => () => {});
   let [dataRevision, setDataRevision] = useState<number>(0);
   let [bizarreEdgeCaseThingIHateIt, setBizarreEdgeCaseThingIHateIt] =
     useState<number>(Math.random() / 10000 + 0.00001);
   let [plotCenter, setPlotCenter] = useState<number[]>([0, 0]);
 
   let [nextPuzzleTime, setNextPuzzleTime] = useState<Date>(new Date());
-  let [stats, setStats] = useState<StatsStatus>({
+  let [stats] = useState<StatsStatus>({
     totalGuesses: 0,
     totalSolves: 0,
     totalSolveGuesses: 0,
@@ -99,68 +90,23 @@ function App() {
     uirevision: 1,
   };
 
-  let [socketState, setSocketState] = useState<
-    "connected" | "connecting" | "closed"
-  >("connecting");
-  let [playersOnline, setPlayersOnline] = useState<number>(0);
-  let [socketDisconnectCallback, setSocketDisconnectCallback] = useState<
-    () => void
-  >(() => {});
-  let socketGuessObservable = useRef<Subject<{ x: number; y: number }>>(
-    new Subject<{ x: number; y: number }>()
-  );
   let [plotLayout, setPlotLayout] = useState<Plotly.Layout>(defaultLayout);
 
-  function updateStats(stats: StatsUpdate | LesserStatsUpdate) {
-    if (stats.type == "greater") {
-      setStats({
-        totalGuesses: stats.total_guesses,
-        totalSolves: stats.total_solves,
-        totalSolveGuesses: stats.total_guesses_for_solves,
-        buckets: [
-          stats.solve_bucket_1_20,
-          stats.solve_bucket_21_40,
-          stats.solve_bucket_41_60,
-          stats.solve_bucket_61_80,
-          stats.solve_bucket_81_100,
-          stats.solve_bucket_101_120,
-          stats.solve_bucket_121_140,
-          stats.solve_bucket_141_160,
-          stats.solve_bucket_161_180,
-          stats.solve_bucket_181_200,
-          stats.solve_bucket_201_220,
-          stats.solve_bucket_221_240,
-          stats.solve_bucket_241_260,
-          stats.solve_bucket_261_280,
-          stats.solve_bucket_281_300,
-          stats.solve_bucket_301_320,
-          stats.solve_bucket_321_340,
-          stats.solve_bucket_341_360,
-          stats.solve_bucket_361_380,
-          stats.solve_bucket_381_400,
-          stats.solve_bucket_401_420,
-          stats.solve_bucket_421_440,
-          stats.solve_bucket_441_460,
-          stats.solve_bucket_461_480,
-          stats.solve_bucket_481_500,
-        ],
-      });
-    } else {
-      setStats((old) => ({
-        ...old,
-        totalGuesses: stats.totalGuesses,
-      }));
-    }
-  }
-
   useEffect(() => {
-    if (localStorage.getItem("pimantle-offline")) {
-      setSocketState("closed");
-    }
-    // ReactGA.initialize("G-QXGCPQVS46");
-    // ReactGA.pageview(window.location.pathname + window.location.search);
+    // Reset state when language changes
+    setParsedWords([]);
+    setSecret(undefined);
+    setGuesses([]);
+    setLanguageDataAvailable(true);
+
+    const langConfig = LANGUAGE_CONFIGS[language];
+    const wordList: [string, number][] =
+      language === "de"
+        ? (wordListDe as [string, number][])
+        : (wordListEn as [string, number][]);
+
     (async () => {
-      let pimantleEpoch = dayjs("2022-02-22T03:00:00");
+      let pimantleEpoch = dayjs("2026-07-07T03:00:00");
       let semantleEpoch = dayjs("2022-01-29T00:00:00Z");
       let today = dayjs();
 
@@ -237,14 +183,25 @@ function App() {
       window
         .fetch(
           `/${
-            puzzleType == "pimantle" ? "secret_words" : "semantle_words"
+            puzzleType === "pimantle"
+              ? langConfig.secretWordsFolder
+              : langConfig.semantleWordsFolder
           }/secret_word_${newPuzzleNumber}.bin?3`,
-          {
-            cache: "force-cache",
-          }
+          { cache: "force-cache" }
         )
-        .then((response) => response.arrayBuffer())
+        .then((response) => {
+          if (!response.ok) {
+            setLanguageDataAvailable(false);
+            return null;
+          }
+          return response.arrayBuffer();
+        })
         .then((buffer) => {
+          if (!buffer) return;
+          if (wordList.length === 0) {
+            setLanguageDataAvailable(false);
+            return;
+          }
           let dataView = new DataView(buffer);
           let offset = 4;
           let parsedWords: Word[] = [];
@@ -340,81 +297,9 @@ function App() {
           ]);
 
           setParsedWords(parsedWords);
-
-          if (localStorage.getItem("pimantle-offline")) {
-            setSocketState("closed");
-          } else {
-            let socketUrl: string;
-            if (window.location.href.indexOf("pimanrul.es") > -1 || true) {
-              socketUrl = "https://pimantle-backend.herokuapp.com";
-            } else {
-              socketUrl = "http://localhost:8000";
-            }
-            const socket: Socket<ServerEvent, ClientEvent> = io(socketUrl);
-
-            socket.on("connect", () => {
-              setSocketState("connected");
-
-              setSocketGuessHandler(
-                () =>
-                  (
-                    x: number,
-                    y: number,
-                    solveStatus: SolveStatus | undefined
-                  ) => {
-                    console.log("submitting a guess", x, y);
-
-                    socket.emit("guess", x, y, solveStatus);
-                  }
-              );
-
-              setSocketDisconnectCallback(() => () => {
-                localStorage.setItem("pimantle-offline", "true");
-                setSocketState("closed");
-                socket.disconnect();
-              });
-
-              socket.io.on("reconnect_attempt", () => {
-                setSocketState("connecting");
-              });
-
-              socket.io.on("reconnect", () => {
-                setSocketState("connected");
-              });
-
-              socket.on("playerCount", (count: number) => {
-                setPlayersOnline(count);
-              });
-
-              socket.on("newGuess", (x: number, y: number) => {
-                console.log("new server guess", x, y);
-                socketGuessObservable.current.next({ x, y });
-              });
-
-              socket.on(
-                "guessWithStats",
-                (
-                  x: number,
-                  y: number,
-                  stats: StatsUpdate | LesserStatsUpdate
-                ) => {
-                  console.log("new server guess", x, y);
-                  socketGuessObservable.current.next({ x, y });
-                  updateStats(stats);
-                }
-              );
-
-              socket.on("statsUpdate", (stats: StatsUpdate) => {
-                console.log("got some stats!", stats);
-                updateStats(stats);
-              });
-
-              socket.emit("joinGame", `${puzzleType}-${newPuzzleNumber}`);
-            });
-          }
         });
     })();
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     setDataRevision((old) => old + 1);
@@ -516,36 +401,18 @@ function App() {
         autoClose={5000}
         theme="dark"
       />
-      {socketState === "connected" && (
-        <MultiplayerBackground
-          xRange={displayedXRange}
-          yRange={displayedYRange}
-          guessObservable={socketGuessObservable}
-        />
-      )}
+      {/* Multiplayer disabled — re-enable by setting MULTIPLAYER_ENABLED = true */}
       <div className="header">
-        <ServerPanel
-          socketState={socketState}
-          playersOnline={playersOnline}
-          socketDisconnectCallback={socketDisconnectCallback}
-        />
+        <span className="header-left" />
         <span
           className="header-link"
           onClick={() => setArchiveOpen(true)}
-          title="Rätselarchiv"
+          title="Puzzle archive"
         >
           {puzzleType === "semantle" ? "Semantle" : "Pimantel"} #{currentPuzzle}{" "}
           {isArchivePuzzle && "(Archiv-Rätsel)"}
         </span>
-        <span className="header-right">
-          {/*<span*/}
-          {/*  className="header-link"*/}
-          {/*  onClick={() => setSettingsOpen(true)}*/}
-          {/*  title="Settings"*/}
-          {/*>*/}
-          {/*  ⚙*/}
-          {/*</span>*/}
-        </span>
+        <span className="header-right" />
       </div>
       <ArchiveDropdown
         isOpen={archiveOpen}
@@ -567,8 +434,8 @@ function App() {
               puzzleType={puzzleType}
               currentPuzzle={currentPuzzle}
               stats={stats}
-              socketState={socketState}
-              socketGuessHandler={socketGuessHandler}
+              socketState={"closed"}
+              socketGuessHandler={() => {}}
               scroller={scroller}
               hoverEnabled={hoverEnabled}
               plotData={plotData}
@@ -578,6 +445,7 @@ function App() {
               secret={secret}
               nextPuzzleTime={nextPuzzleTime}
               centerPlot={centerPlot}
+              language={language}
             />
             <div className="safe-container" />
           </div>
@@ -593,10 +461,21 @@ function App() {
           />
         </div>
       )}
-      {parsedWords.length === 0 && (
+      {parsedWords.length === 0 && languageDataAvailable && (
         <div className="loading-container">
           <div className="loading-text">
             Lade {puzzleType === "semantle" ? "Semantle" : "Pimantel"}...
+          </div>
+        </div>
+      )}
+      {!languageDataAvailable && (
+        <div className="loading-container">
+          <div className="language-unavailable">
+            <h2>🚧 Not available yet</h2>
+            <p>
+              Für dieses Rätsel gibt es noch keine Daten. Schau bald wieder
+              vorbei!
+            </p>
           </div>
         </div>
       )}

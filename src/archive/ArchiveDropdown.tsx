@@ -22,9 +22,9 @@ function ArchiveDropdown({
           ✕
         </div>
         <div className="archive-column">
-          <h1 className="archive-heading">Heutige Rätsel</h1>
+          <h1 className="archive-heading">Daily Puzzles</h1>
           <a href="/" className="todays-pimantle archive-puzzle">
-            <div className="tile-title">Heutiges Pimantel</div>
+            <div className="tile-title">Today&apos;s Pimantel</div>
           </a>
           <a
             href={"https://semantle.com/"}
@@ -32,7 +32,7 @@ function ArchiveDropdown({
             rel={"noreferrer"}
             className="todays-semantle archive-puzzle"
           >
-            <div className="tile-title">Heutiges Semantle</div>
+            <div className="tile-title">Today&apos;s Semantle</div>
             <div className="semantle-footnote">(auf semantle.com)</div>
           </a>
 
@@ -43,19 +43,35 @@ function ArchiveDropdown({
         </div>
 
         <div className="archive-column">
-          <h1 className="archive-heading">Weiteres</h1>
-          <h2 className="archive-subheading">Quellcode</h2>
+          <h1 className="archive-heading">Links</h1>
+          <h2 className="archive-subheading">Created by</h2>
           <div className="social-panel">
+            <a
+              href="https://manjang.de"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="archive-text-link"
+            >
+              manjang.de
+            </a>
             <a
               href="https://github.com/ronjang/pimantel"
               target="_blank"
               rel="noopener noreferrer"
+              className="archive-text-link"
             >
-              <img
-                className="social-button"
-                src="/socials/github.svg"
-                alt="github"
-              />
+              GitHub
+            </a>
+          </div>
+          <h2 className="archive-subheading">Based on</h2>
+          <div className="social-panel">
+            <a
+              href="https://semantle.pimanrul.es"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="archive-text-link"
+            >
+              Pimantle von pimanrules
             </a>
           </div>
           <h1 className="archive-heading">Semantle-Archiv</h1>

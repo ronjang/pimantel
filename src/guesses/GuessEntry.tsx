@@ -10,7 +10,7 @@ function GuessEntry({
 }) {
   function getFlavorText(rank: number): string {
     if (rank === 0) {
-      return "TREFFER! 🎯";
+      return "SOLVED! 🎯";
     } else if (rank < 10) {
       return "🔥🔥🔥";
     } else if (rank < 50) {
@@ -18,23 +18,23 @@ function GuessEntry({
     } else if (rank < 100) {
       return "🔥";
     } else if (rank < 200) {
-      return "Heiß";
+      return "HOT";
     } else if (rank < 500) {
       return "Warm";
     } else if (rank < 1_000) {
-      return "Lauwarm";
+      return "Warm";
     } else if (rank < 3_000) {
-      return "Lau";
+      return "Tepid";
     } else if (rank < 10_000) {
-      return "Kühl";
+      return "Cool";
     } else if (rank < 20_000) {
-      return "Kalt";
+      return "Chilly";
     } else if (rank < 50_000) {
-      return "Sehr kalt";
+      return "Cold";
     } else if (rank < 75_000) {
-      return "Eiskalt";
+      return "Frigid";
     } else {
-      return "Tiefgefroren";
+      return "Freezing";
     }
   }
 

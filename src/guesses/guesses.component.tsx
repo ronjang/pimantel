@@ -21,6 +21,8 @@ import { Word, SubmitGuessesParams } from "./guesses.model";
 import GuessEntry from "./GuessEntry";
 import Solved from "../solved/solved.component";
 import { StatsStatus } from "../stats/stats.model";
+import { GameLanguage } from "../data/languageConfig";
+import { normalizeGuess } from "../data/normalize";
 // @ts-ignore
 import Plotly from "plotly.js-gl2d-dist-min";
 
@@ -42,6 +44,7 @@ function Guesses({
   secret,
   nextPuzzleTime,
   centerPlot,
+  language,
 }: {
   guesses: Word[];
   setGuesses: Dispatch<React.SetStateAction<Word[]>>;
@@ -64,6 +67,7 @@ function Guesses({
   secret: Word | undefined;
   nextPuzzleTime: Date;
   centerPlot: (on?: Word | undefined) => void;
+  language: GameLanguage;
 }) {
   let [mostRecentGuess, setMostRecentGuess] = useState<Word | undefined>(
     undefined
@@ -86,7 +90,7 @@ function Guesses({
 
   function submitGuess(guess: FormEvent<HTMLFormElement>) {
     guess.preventDefault();
-    let newGuess = guess.currentTarget.guess.value.toLowerCase().trim();
+    let newGuess = guess.currentTarget.guess.value.trim();
     submitGuesses([{ word: newGuess, isHint: false }], false);
     guess.currentTarget.guess.value = "";
   }
@@ -117,7 +121,7 @@ function Guesses({
   function getGoodHint() {
     let bestGuess = guesses[guesses.length - 1];
     if (bestGuess.rank == 1) {
-      toast.error("Du hast bereits den besten Hinweis erhalten!");
+      toast.error("You already got the best hint!");
       return;
     }
 
@@ -138,12 +142,15 @@ function Guesses({
         true
       );
     } else {
-      toast.error("Hinweis konnte leider nicht gefunden werden.");
+      toast.error("Hint konnte leider nicht gefunden werden.");
     }
   }
 
   function checkGuess(guess: string): Word | undefined {
-    return parsedWords.find((word) => word.word === guess);
+    const normalized = normalizeGuess(guess, language);
+    return parsedWords.find(
+      (word) => normalizeGuess(word.word, language) === normalized
+    );
   }
 
   function submitGuesses(guess: SubmitGuessesParams[], isAutomated: boolean) {
@@ -385,7 +392,7 @@ function Guesses({
         {
           <>
             <div className={`guess-setting bg-frigid`}>
-              <label htmlFor="toggleSort">Tipps chronologisch sortieren</label>
+              <label htmlFor="toggleSort">Sort guesses chronologically</label>
               <input
                 id="toggleSort"
                 type="checkbox"
@@ -412,18 +419,18 @@ function Guesses({
         <form onSubmit={submitGuess} className="guess-form" ref={inputBox}>
           <input
             type="text"
-            placeholder="Tipp eingeben"
+            placeholder="Enter a guess"
             id="guess"
             className="guess-input"
             autoCapitalize="none"
             autoComplete="off"
             autoFocus={true}
           />
-          <input type="submit" value="Raten" className="guess-submit" />
+          <input type="submit" value="Guess" className="guess-submit" />
           {guesses.length > 10 && (
             <input
               type="button"
-              value="Hinweis"
+              value="Hint"
               className="hint-button"
               onClick={getHint}
             />
@@ -432,7 +439,7 @@ function Guesses({
             !guesses.some((guess) => guess.rank === 1) && (
               <input
                 type="button"
-                value="Guter Hinweis"
+                value="Good hint"
                 className="give-up-button"
                 onClick={getGoodHint}
               />

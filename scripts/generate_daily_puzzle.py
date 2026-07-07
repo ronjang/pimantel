@@ -24,7 +24,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
-from gensim.models import KeyedVectors
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
@@ -42,14 +41,12 @@ TWIST = 6.0
 REPO_ROOT = Path(__file__).parent.parent
 DATA_DIR = REPO_ROOT / "scripts" / "data"
 ANGLES_FILE = DATA_DIR / "angles.npy"
+VECTORS_FILE = DATA_DIR / "vectors.npy"
 VOCAB_FILE = DATA_DIR / "vocab.json"
-MODEL_KEYS_FILE = DATA_DIR / "model_keys.json"
 SECRET_POOL_FILE = DATA_DIR / "secret_pool_de.json"
 OUT_SECRET_DIR = REPO_ROOT / "public" / "secret_words_de"
 # shields.io endpoint badge showing the current daily puzzle number
 BADGE_FILE = REPO_ROOT / ".github" / "badge" / "daily.json"
-
-MODEL_CACHE = Path.home() / ".cache" / "pimantel" / "german.model"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -83,9 +80,8 @@ def float16_bytes(value: float) -> bytes:
 def generate_bin(
     secret_display: str,
     vocab: list[str],
-    model_keys: list[str],
     display_to_idx: dict[str, int],
-    kv: KeyedVectors,
+    vectors: np.ndarray,
     angles: np.ndarray,
     out_path: Path,
 ):
@@ -95,10 +91,10 @@ def generate_bin(
 
     secret_idx = display_to_idx[secret_display]
 
-    # Vectorized cosine similarity of the secret vs the whole vocab.
-    # Vectors are looked up via the model_keys (the real model vocab words).
-    all_vecs = np.array([kv[mk] for mk in model_keys], dtype=np.float32)
-    secret_vec = kv[model_keys[secret_idx]].astype(np.float32)
+    # Vectorized cosine similarity of the secret vs the whole vocab, using the
+    # precomputed word2vec vectors (no 704MB model needed at runtime).
+    all_vecs = vectors
+    secret_vec = vectors[secret_idx]
 
     norms = np.linalg.norm(all_vecs, axis=1)
     secret_norm = np.linalg.norm(secret_vec)
@@ -150,15 +146,15 @@ def generate_bin(
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
-    for required in (ANGLES_FILE, VOCAB_FILE, MODEL_KEYS_FILE, SECRET_POOL_FILE):
+    for required in (ANGLES_FILE, VECTORS_FILE, VOCAB_FILE, SECRET_POOL_FILE):
         if not required.exists():
             print(f"Missing artifact: {required}")
             print("Run scripts/build_vocab_and_tsne.py first (and create the secret pool).")
             sys.exit(1)
 
     angles = np.load(ANGLES_FILE)
+    vectors = np.load(VECTORS_FILE).astype(np.float32)
     vocab = json.loads(VOCAB_FILE.read_text(encoding="utf-8"))
-    model_keys = json.loads(MODEL_KEYS_FILE.read_text(encoding="utf-8"))
     raw_pool = json.loads(SECRET_POOL_FILE.read_text(encoding="utf-8"))
     display_to_idx = {w: i for i, w in enumerate(vocab)}
 
@@ -179,11 +175,6 @@ def main():
         sys.exit(1)
     print(f"Secret pool: {len(pool)} valid words")
 
-    print("Loading model ...")
-    kv = KeyedVectors.load_word2vec_format(
-        str(MODEL_CACHE), binary=True, unicode_errors="ignore"
-    )
-
     if len(sys.argv) > 1:
         base = int(sys.argv[1])
     else:
@@ -193,7 +184,7 @@ def main():
     for p in range(base, base + LOOKAHEAD + 1):
         secret = pick_secret_word(p, pool)
         out_path = OUT_SECRET_DIR / f"secret_word_{p}.bin"
-        generate_bin(secret, vocab, model_keys, display_to_idx, kv, angles, out_path)
+        generate_bin(secret, vocab, display_to_idx, vectors, angles, out_path)
 
     # Write the shields.io endpoint badge for the current daily puzzle number.
     BADGE_FILE.parent.mkdir(parents=True, exist_ok=True)

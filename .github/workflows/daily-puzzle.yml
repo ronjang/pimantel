@@ -29,35 +29,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ runner.os }}-${{ hashFiles('scripts/requirements.txt') }}
+          key: pip-${{ runner.os }}-daily-numpy
 
       - name: Install dependencies
-        run: pip install -r scripts/requirements.txt
-
-      - name: Cache word2vec model
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pimantel/german.model
-          key: german-word2vec-model-v1
-
-      - name: Cache t-SNE artifacts
-        uses: actions/cache@v4
-        with:
-          path: |
-            scripts/data/angles.npy
-            scripts/data/vocab.json
-            scripts/data/model_keys.json
-            src/data/word_list_de.json
-          key: tsne-artifacts-v1
-
-      - name: Build vocab + t-SNE (only if artifacts are missing)
-        run: |
-          if [ ! -f scripts/data/angles.npy ]; then
-            echo "Stage 1 artifacts missing — running build_vocab_and_tsne.py"
-            python scripts/build_vocab_and_tsne.py
-          else
-            echo "Stage 1 artifacts present — skipping t-SNE"
-          fi
+        # The daily job only needs numpy (vectors + angles are precomputed and
+        # committed). No gensim / 704MB model download required.
+        run: pip install numpy
 
       - name: Generate today's puzzle
         run: python scripts/generate_daily_puzzle.py
@@ -66,7 +43,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/secret_words_de/ src/data/word_list_de.json .github/badge/daily.json
+          git add public/secret_words_de/ .github/badge/daily.json
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

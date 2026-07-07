@@ -36,6 +36,7 @@ REPO_ROOT = Path(__file__).parent.parent
 OUT_WORD_LIST = REPO_ROOT / "src" / "data" / "word_list_de.json"
 DATA_DIR = REPO_ROOT / "scripts" / "data"
 OUT_ANGLES = DATA_DIR / "angles.npy"
+OUT_VECTORS = DATA_DIR / "vectors.npy"
 OUT_VOCAB = DATA_DIR / "vocab.json"
 OUT_MODEL_KEYS = DATA_DIR / "model_keys.json"
 
@@ -124,7 +125,7 @@ def build_vocab(kv: KeyedVectors) -> list[tuple[str, int, str]]:
 
 # ── t-SNE ───────────────────────────────────────────────────────────────────────
 
-def compute_tsne_angles(kv: KeyedVectors, entries: list[tuple[str, int, str]]) -> np.ndarray:
+def compute_tsne_angles(vectors: np.ndarray) -> np.ndarray:
     """
     Runs 1D t-SNE over the whole vocabulary and maps the result to an angle
     in [0, 2π). Each word thus gets a FIXED angle on the circle, independent of
@@ -133,10 +134,6 @@ def compute_tsne_angles(kv: KeyedVectors, entries: list[tuple[str, int, str]]) -
     (the secret word), instead of a lopsided blob. Returns an (N,) float32
     array of angles in radians.
     """
-    model_keys = [mk for _, _, mk in entries]
-    print(f"Extracting {len(model_keys)} vectors ...")
-    vectors = np.array([kv[mk] for mk in tqdm(model_keys, desc="vectors")], dtype=np.float32)
-
     print("Running 1D t-SNE (this is the slow part) ...")
     tsne = TSNE(n_components=1, perplexity=30, max_iter=500, random_state=42, verbose=1)
     tsne_1d = tsne.fit_transform(vectors).flatten()
@@ -146,13 +143,23 @@ def compute_tsne_angles(kv: KeyedVectors, entries: list[tuple[str, int, str]]) -
     angles = (tsne_1d - lo) / span * (2 * math.pi)
     return angles.astype(np.float32)
 
+
+def extract_vectors(kv: KeyedVectors, entries: list[tuple[str, int, str]]) -> np.ndarray:
+    """Extracts the word2vec vectors for every vocab entry, in order."""
+    model_keys = [mk for _, _, mk in entries]
+    print(f"Extracting {len(model_keys)} vectors ...")
+    return np.array(
+        [kv[mk] for mk in tqdm(model_keys, desc="vectors")], dtype=np.float32
+    )
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     kv = load_model()
     entries = build_vocab(kv)
-    angles = compute_tsne_angles(kv, entries)
+    vectors = extract_vectors(kv, entries)
+    angles = compute_tsne_angles(vectors)
 
     # word_list_de.json for the React app: [display_word, frequency]
     word_list = [[display, count] for display, count, _ in entries]
@@ -165,7 +172,7 @@ def main():
     with open(OUT_VOCAB, "w", encoding="utf-8") as f:
         json.dump([display for display, _, _ in entries], f, ensure_ascii=False)
 
-    # model_keys.json: the model vocab key for each entry (for vector lookup)
+    # model_keys.json: the model vocab key for each entry (kept for reference)
     print(f"Writing {OUT_MODEL_KEYS} ...")
     with open(OUT_MODEL_KEYS, "w", encoding="utf-8") as f:
         json.dump([mk for _, _, mk in entries], f, ensure_ascii=False)
@@ -173,9 +180,14 @@ def main():
     print(f"Writing {OUT_ANGLES} ...")
     np.save(OUT_ANGLES, angles)
 
+    # vectors.npy: the word2vec vectors for the whole vocab. The daily job uses
+    # these to compute cosine similarities WITHOUT needing the 704MB model.
+    print(f"Writing {OUT_VECTORS} ...")
+    np.save(OUT_VECTORS, vectors.astype(np.float16))
+
     print("\n✅ Stage 1 done. Artifacts to cache:")
-    print(f"   {MODEL_CACHE}")
     print(f"   {OUT_ANGLES}")
+    print(f"   {OUT_VECTORS}")
     print(f"   {OUT_VOCAB}")
     print(f"   {OUT_MODEL_KEYS}")
     print(f"   {OUT_WORD_LIST}")

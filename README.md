@@ -1,7 +1,3 @@
-#Pimantle!
+#Pimantel!
 
-It's like Semantle, but by Piman.
-
-https://semantle.pimanrul.es/
-
-This code is pretty bad, please don't read it :)
+It's like Pimantle, but in german!

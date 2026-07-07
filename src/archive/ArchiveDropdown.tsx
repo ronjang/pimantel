@@ -5,14 +5,12 @@ export type ArchiveDropdownProps = {
   isOpen: boolean;
   close: () => void;
   archivePimantles: ArchiveLink[];
-  archiveSemantles: ArchiveLink[];
 };
 
 function ArchiveDropdown({
   isOpen,
   close,
   archivePimantles,
-  archiveSemantles,
 }: ArchiveDropdownProps) {
   return (
     <div className={`archive-overlay ${isOpen ? "archive-open" : ""}`}>
@@ -24,16 +22,16 @@ function ArchiveDropdown({
         <div className="archive-column">
           <h1 className="archive-heading">Daily Puzzles</h1>
           <a href="/" className="todays-pimantle archive-puzzle">
-            <div className="tile-title">Today&apos;s Pimantel</div>
+            <div className="tile-title">Heutiges Pimantel</div>
           </a>
           <a
-            href={"https://semantle.com/"}
+            href={"https://semantle.pimanrul.es/"}
             target={"_blank"}
             rel={"noreferrer"}
             className="todays-semantle archive-puzzle"
           >
-            <div className="tile-title">Today&apos;s Semantle</div>
-            <div className="semantle-footnote">(auf semantle.com)</div>
+            <div className="tile-title">Today&apos;s Pimantle</div>
+            <div className="semantle-footnote">(English, auf pimanrul.es)</div>
           </a>
 
           <h1 className="archive-heading">Pimantel-Archiv</h1>
@@ -74,10 +72,6 @@ function ArchiveDropdown({
               Pimantle von pimanrules
             </a>
           </div>
-          <h1 className="archive-heading">Semantle-Archiv</h1>
-          {archiveSemantles.map((puzzle, index) => (
-            <ArchiveTile link={puzzle} key={`semantle-tile-${index}`} />
-          ))}
         </div>
       </div>
     </div>

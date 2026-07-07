@@ -39,7 +39,6 @@ function App() {
   let [isArchivePuzzle, setIsArchivePuzzle] = useState<boolean>(false);
 
   let [archivePimantles, setArchivePimantles] = useState<ArchiveLink[]>([]);
-  let [archiveSemantles, setArchiveSemantles] = useState<ArchiveLink[]>([]);
   let [puzzleType, setPuzzleType] = useState<PuzzleType>("pimantle");
   let [currentPuzzle, setCurrentPuzzle] = useState<string>("?");
   let [parsedWords, setParsedWords] = useState<Word[]>([]);
@@ -107,45 +106,27 @@ function App() {
 
     (async () => {
       let pimantleEpoch = dayjs("2026-07-07T03:00:00");
-      let semantleEpoch = dayjs("2022-01-29T00:00:00Z");
       let today = dayjs();
 
       let todaysPimantle = today.diff(pimantleEpoch, "days");
-      let todaysSemantle = today.diff(semantleEpoch, "days");
 
       let pimantleArchive: ArchiveLink[] = [];
-      let semantleArchive: ArchiveLink[] = [];
 
       await migrateLocalStorage();
 
-      for (let i = todaysSemantle - 1; i >= 0; i--) {
-        if (i <= 399) {
-          let semantleProgress = await loadProgress("semantle", i);
-          let semantleSolved = localStorage.getItem(`semantle-${i}-solved`);
-          semantleArchive.push({
-            puzzleType: "semantle",
-            puzzleIndex: i,
-            started: !!semantleProgress,
-            solved: !!semantleSolved,
-            guesses: (semantleProgress && semantleProgress.length) ?? 0,
-          });
-        }
-
-        if (i < todaysPimantle) {
-          let pimantleProgress = await loadProgress("pimantle", i);
-          let pimantleSolved = localStorage.getItem(`pimantle-${i}-solved`);
-          pimantleArchive.push({
-            puzzleType: "pimantle",
-            puzzleIndex: i,
-            started: !!pimantleProgress,
-            solved: !!pimantleSolved,
-            guesses: (pimantleProgress && pimantleProgress.length) ?? 0,
-          });
-        }
+      for (let i = todaysPimantle - 1; i >= 0; i--) {
+        let pimantleProgress = await loadProgress("pimantle", i);
+        let pimantleSolved = localStorage.getItem(`pimantle-${i}-solved`);
+        pimantleArchive.push({
+          puzzleType: "pimantle",
+          puzzleIndex: i,
+          started: !!pimantleProgress,
+          solved: !!pimantleSolved,
+          guesses: (pimantleProgress && pimantleProgress.length) ?? 0,
+        });
       }
 
       setArchivePimantles(pimantleArchive);
-      setArchiveSemantles(semantleArchive);
 
       let newPuzzleNumber = todaysPimantle;
       let puzzleType = "pimantle";
@@ -156,28 +137,16 @@ function App() {
 
       if (
         urlPuzzleIndex >= 0 &&
-        ((urlPuzzleType?.startsWith("p") && urlPuzzleIndex < todaysPimantle) ||
-          (urlPuzzleType?.startsWith("s") && urlPuzzleIndex < todaysSemantle))
+        urlPuzzleType?.startsWith("p") &&
+        urlPuzzleIndex < todaysPimantle
       ) {
         newPuzzleNumber = urlPuzzleIndex;
-        puzzleType = urlPuzzleType?.startsWith("p") ? "pimantle" : "semantle";
         setIsArchivePuzzle(true);
-        document.title = `Pimantel Archiv: ${
-          puzzleType === "pimantle" ? "Pimantel" : "Semantle"
-        } #${newPuzzleNumber}`;
+        document.title = `Pimantel Archiv: Pimantel #${newPuzzleNumber}`;
       }
 
-      if (puzzleType == "pimantle") {
-        setNextPuzzleTime(
-          pimantleEpoch.add(todaysPimantle + 1, "day").toDate()
-        );
-        setPuzzleType("pimantle");
-      } else {
-        setNextPuzzleTime(
-          semantleEpoch.add(todaysSemantle + 1, "day").toDate()
-        );
-        setPuzzleType("semantle");
-      }
+      setNextPuzzleTime(pimantleEpoch.add(todaysPimantle + 1, "day").toDate());
+      setPuzzleType("pimantle");
 
       setCurrentPuzzle(newPuzzleNumber.toString());
       window
@@ -418,7 +387,6 @@ function App() {
         isOpen={archiveOpen}
         close={() => setArchiveOpen(false)}
         archivePimantles={archivePimantles}
-        archiveSemantles={archiveSemantles}
       />
       <SettingsDropdown
         isOpen={settingsOpen}

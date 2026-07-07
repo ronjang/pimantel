@@ -216,8 +216,8 @@ function App() {
         newPuzzleNumber = urlPuzzleIndex;
         puzzleType = urlPuzzleType?.startsWith("p") ? "pimantle" : "semantle";
         setIsArchivePuzzle(true);
-        document.title = `Pimantle Archive: ${
-          puzzleType === "pimantle" ? "Pimantle" : "Semantle"
+        document.title = `Pimantel Archiv: ${
+          puzzleType === "pimantle" ? "Pimantel" : "Semantle"
         } #${newPuzzleNumber}`;
       }
 
@@ -306,7 +306,7 @@ function App() {
                 size: 15,
                 symbol: "star",
               },
-              hovertemplate: "<b>Secret word</b><extra></extra>",
+              hovertemplate: "<b>Geheimwort</b><extra></extra>",
               hoverlabel: {
                 font: {
                   family: "var(--body-font)",
@@ -334,8 +334,8 @@ function App() {
                   family: "var(--body-font)",
                 },
               },
-              hovertemplate:
-                "<b>%{text}</b><br><br>Similarity: %{customdata[0]}<br>Rank: %{customdata[1]}<br>Your guess: %{customdata[2]}<extra></extra>",
+            hovertemplate:
+                "<b>%{text}</b><br><br>Ähnlichkeit: %{customdata[0]}<br>Rang: %{customdata[1]}<br>Dein Tipp: %{customdata[2]}<extra></extra>",
             },
           ]);
 
@@ -532,10 +532,10 @@ function App() {
         <span
           className="header-link"
           onClick={() => setArchiveOpen(true)}
-          title="Puzzle archives"
+          title="Rätselarchiv"
         >
-          {puzzleType === "semantle" ? "Semantle" : "Pimantle"} #{currentPuzzle}{" "}
-          {isArchivePuzzle && "(archive puzzle)"}
+          {puzzleType === "semantle" ? "Semantle" : "Pimantel"} #{currentPuzzle}{" "}
+          {isArchivePuzzle && "(Archiv-Rätsel)"}
         </span>
         <span className="header-right">
           {/*<span*/}
@@ -596,7 +596,7 @@ function App() {
       {parsedWords.length === 0 && (
         <div className="loading-container">
           <div className="loading-text">
-            Loading the {puzzleType === "semantle" ? "Semantle" : "Pimantle"}...
+            Lade {puzzleType === "semantle" ? "Semantle" : "Pimantel"}...
           </div>
         </div>
       )}

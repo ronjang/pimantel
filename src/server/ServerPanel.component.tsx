@@ -13,27 +13,27 @@ function ServerPanel({
         <>
           <span
             className="player-count"
-            title="Players online solving this puzzle"
+            title="Spieler, die dieses Rätsel gerade lösen"
           >
             👤{playersOnline}
           </span>
           <input
             type="button"
             className="disconnect-button"
-            value="Disconnect"
+            value="Trennen"
             onClick={socketDisconnectCallback}
           />
         </>
       )}
       {socketState === "connecting" && (
-        <span className="reconnecting">Connecting...</span>
+        <span className="reconnecting">Verbinde...</span>
       )}
 
       {socketState === "closed" && (
         <input
           type="button"
           className="disconnect-button"
-          value="Reconnect"
+          value="Verbinden"
           onClick={() => {
             localStorage.removeItem("pimantle-offline");
             setTimeout(() => {

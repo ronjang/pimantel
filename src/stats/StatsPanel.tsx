@@ -30,9 +30,9 @@ function StatsPanel({
       <table>
         <thead>
           <tr>
-            <th>Guesses</th>
-            <th>Solves</th>
-            <th>Avg. guesses</th>
+            <th>Tipps</th>
+            <th>Lösungen</th>
+            <th>Ø Tipps</th>
           </tr>
         </thead>
         <tbody>
@@ -76,7 +76,7 @@ function StatsPanel({
               },
             },
             hovertemplate:
-              "<b>%{x}+ guesses, %{y} solver(s)</b><extra></extra>",
+              "<b>%{x}+ Tipps, %{y} Lösung(en)</b><extra></extra>",
           },
         ]}
         layout={{

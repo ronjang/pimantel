@@ -10,7 +10,7 @@ export function saveProgress(
   return localForage
     .setItem(`${puzzleType}-${puzzleNumber}-forage`, progress)
     .catch(() => {
-      toast.error("Error saving progress");
+      toast.error("Fehler beim Speichern des Fortschritts");
     });
 }
 
@@ -50,14 +50,14 @@ export function migrateLocalStorage(): Promise<any> {
       }
       console.log("local storage migrated");
       return localForage.setItem("migrated", true).catch(() => {
-        toast.error("Error migrating local storage");
+        toast.error("Fehler bei der Migration des lokalen Speichers");
       });
     }
   });
 }
 
 export function getPuzzleName(puzzleType: PuzzleType, currentPuzzle: string) {
-  let puzzleName = puzzleType == "semantle" ? "Semantle" : "Pimantle";
+  let puzzleName = puzzleType == "semantle" ? "Semantle" : "Pimantel";
   return `${puzzleName} #${currentPuzzle}`;
 }
 

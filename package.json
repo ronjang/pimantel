@@ -1,7 +1,8 @@
 {
-  "name": "pimantle",
+  "name": "pimantel",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://pimantel.de",
   "dependencies": {
     "@emotion/react": "^11.8.1",
     "@emotion/styled": "^11.8.1",
@@ -12,6 +13,7 @@
     "file-saver": "^2.0.5",
     "localforage": "^1.10.0",
     "merge-images": "^2.0.0",
+    "plotly.js": "^3.7.0",
     "plotly.js-gl2d-dist-min": "^2.9.0",
     "react": "^17.0.2",
     "react-countdown": "^2.3.2",
@@ -44,7 +46,7 @@
   },
   "scripts": {
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
+    "deploy": "gh-pages -d build -r https://github.com/ronjang/pimantel.git",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

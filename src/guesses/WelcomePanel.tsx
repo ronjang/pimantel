@@ -5,106 +5,110 @@ export type WelcomePanelProperties = {
 function WelcomePanel({ isArchivePuzzle }: WelcomePanelProperties) {
   return (
     <div className={`guess-entry bg-frigid`}>
-      <h3>Welcome to Pimantle!</h3>
+      <h3>Willkommen bei Pimantel!</h3>
       <p>
-        Try to guess {isArchivePuzzle ? "the" : "today's"} secret word. The
-        closer to the center, the more semantically similar your guess is.{" "}
+        Versuche, {isArchivePuzzle ? "das" : "das heutige"} Geheimwort zu erraten. Je näher
+        zur Mitte, desto semantisch ähnlicher ist dein Tipp.{" "}
       </p>
       <details>
-        <summary>Tell me more!</summary>
+        <summary>Mehr erfahren!</summary>
         <br />
-        <h3>Semantic similarity</h3>
+        <h3>Semantische Ähnlichkeit</h3>
         <p>
-          Pimantle uses the same scoring system as Semantle. Each word in its
-          dataset comes from{" "}
-          <a href="https://en.wikipedia.org/wiki/Word2vec">word2vec</a>, a
-          machine learning model that maps words to high dimensional vectors
-          vectors. As it turns out,{" "}
-          <a href="https://en.wikipedia.org/wiki/Cosine_similarity">
-            cosine similarity
+          Pimantel verwendet dasselbe Bewertungssystem wie Semantle. Jedes Wort
+          im Datensatz stammt aus{" "}
+          <a href="https://de.wikipedia.org/wiki/Word2vec">word2vec</a>, einem
+          maschinellen Lernmodell, das Wörter auf hochdimensionale Vektoren
+          abbildet. Die{" "}
+          <a href="https://de.wikipedia.org/wiki/Kosinus-%C3%84hnlichkeit">
+            Kosinus-Ähnlichkeit
           </a>{" "}
-          between these vectors is a good measure of semantic similarity. That's
-          the score ranging from -1 to 1 you see next to each guess.
+          zwischen diesen Vektoren ist ein gutes Maß für semantische Ähnlichkeit.
+          Das ist der Wert zwischen -1 und 1, den du neben jedem Tipp siehst.
         </p>
         <br />
-        <h3>The plot</h3>
+        <h3>Die Karte</h3>
         <p>
-          Pimantle's unique contribution to the semantic similarity guessing
-          game genre (current population: 2) is the fun plot you see in the
-          background. This is a radial plot, with the target word in the center,
-          with r corresponding to cosine similarity, and &theta; corresponding
-          to a 1-D{" "}
-          <a href="https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding">
+          Pimantels einzigartiger Beitrag zum Genre der semantischen
+          Ratespiele ist die interaktive Karte im Hintergrund. Es handelt sich
+          um eine radiale Darstellung mit dem Zielwort in der Mitte. Der Radius
+          entspricht der Kosinus-Ähnlichkeit, und &theta; entspricht einer
+          1-D-{" "}
+          <a href="https://de.wikipedia.org/wiki/T-distributed_Stochastic_Neighbor_Embedding">
             t-SNE
           </a>{" "}
-          of the word list.
+          der Wortliste.
         </p>
         <br />
         <p>
-          We also apply a slight twist to make the plot look more like a spiral
-          galaxy, and we nudge each point towards its nearest neighbors to make
-          the data look a little more cluster-y. This is why sometimes you'll
-          see points that seem to be out of order.
+          Wir fügen außerdem eine leichte Verdrehung hinzu, damit die Karte wie
+          eine Spiralgalaxie aussieht, und schieben jeden Punkt in Richtung
+          seiner nächsten Nachbarn, damit die Daten etwas cluster-artiger
+          wirken. Deshalb scheinen manche Punkte manchmal außer der Reihe zu
+          liegen.
         </p>
         <br />
         <p>
-          The hope is that the plot will show you the paths of logic from your
-          guesses towards the target word. Perhaps you've made a series of
-          guesses that all fall along one arm, but that arm doesn't actually
-          reach the center? In that case, you should try guessing along a
-          different path.
+          Die Hoffnung ist, dass die Karte dir die logischen Pfade von deinen
+          Tipps zum Zielwort zeigt. Vielleicht hast du eine Reihe von Tipps
+          abgegeben, die alle entlang eines Arms liegen, der aber nicht wirklich
+          die Mitte erreicht? In diesem Fall solltest du versuchen, entlang
+          eines anderen Pfades zu raten.
         </p>
         <br />
-        <h3>Hints</h3>
+        <h3>Hinweise</h3>
         <p>
-          Make enough guesses and you'll unlock the hint button. This will
-          reveal the word that lies halfway in ranking between your two closest
-          guesses (so if you've guessed the 1000th and 2000th closest words, the
-          hint will be the 1500th closest word).
-        </p>
-        <br />
-        <p>
-          Use enough hints and you'll unlock "good hints." These lie halfway
-          between your closest guess and the target word.
+          Gib genug Tipps ab und du schaltest den Hinweis-Button frei. Dieser
+          verrät das Wort, das in der Rangliste auf halber Strecke zwischen
+          deinen zwei besten Tipps liegt (wenn du also das 1000. und das 2000.
+          ähnlichste Wort geraten hast, ist der Hinweis das 1500. ähnlichste
+          Wort).
         </p>
         <br />
         <p>
-          Hints are not guaranteed to be useful, but hopefully they'll serve to
-          shake up your thinking!
-        </p>
-        <br />
-        <h3>Multiplayer</h3>
-        <p>
-          If you're connected to the server, you'll see other players guesses
-          and radar blips on the plot, and if anyone guesses the secret word
-          you'll see a star. This is not useful in any way, but hopefully it
-          gives you motivation!
+          Benutze genug Hinweise und du schaltest „gute Hinweise" frei. Diese
+          liegen auf halbem Weg zwischen deinem besten Tipp und dem Zielwort.
         </p>
         <br />
         <p>
-          If you're playing on a lower-end device, disconnecting from the server
-          (with the button in the top-left) might improve performance.
+          Hinweise sind nicht garantiert nützlich, aber sie sollen dein Denken
+          in neue Bahnen lenken!
         </p>
         <br />
-        <h3>Word list</h3>
+        <h3>Mehrspieler</h3>
         <p>
-          The list of guessable words comes from a careful union and
-          intersection of a few datasets, include word2vec, Wikipedia, Scrabble,
-          and others. The daily secret words are all hand-picked. I'm sorry.
+          Wenn du mit dem Server verbunden bist, siehst du die Tipps anderer
+          Spieler sowie Radarblips auf der Karte. Wenn jemand das Geheimwort
+          errät, erscheint ein Stern. Das ist nicht unbedingt nützlich, aber
+          vielleicht motiviert es dich!
+        </p>
+        <br />
+        <p>
+          Wenn du auf einem leistungsschwächeren Gerät spielst, kann das
+          Trennen vom Server (mit dem Button oben links) die Leistung verbessern.
+        </p>
+        <br />
+        <h3>Wortliste</h3>
+        <p>
+          Die Liste der ratbaren Wörter stammt aus einer sorgfältigen
+          Kombination mehrerer Datensätze, darunter word2vec, Wikipedia,
+          Scrabble und weitere. Die täglichen Geheimwörter sind alle
+          handverlesen. Entschuldigung.
         </p>
         <br />
         <hr />
       </details>
       <p>
-        Please be aware that the dataset includes offensive words (including
-        slurs!) which may be surfaced by the "hint" and "explore" features.{" "}
+        Bitte beachte, dass der Datensatz anstößige Wörter (einschließlich
+        Schimpfwörter!) enthalten kann, die durch die „Hinweis"- und
+        „Erkunden"-Funktionen auftauchen können.{" "}
       </p>
       <p>
-        This site is designed for desktop. It'll work on mobile, but you'll
-        likely run into some issues.
+        Diese Seite ist für Desktop optimiert. Sie funktioniert auch auf
+        Mobilgeräten, aber es kann zu einigen Problemen kommen.
       </p>
       <p>
-        Based on{" "}
+        Basiert auf{" "}
         <a
           href={"https://semantle.novalis.org/"}
           target={"_blank"}
@@ -112,44 +116,17 @@ function WelcomePanel({ isArchivePuzzle }: WelcomePanelProperties) {
         >
           Semantle
         </a>
-        . Created by{" "}
+        {" "}und{" "}
+        <a
+          href={"https://semantle.pimanrul.es/"}
+          target={"_blank"}
+          rel={"noreferrer"}
+        >
+          Pimantle
+        </a>
+        {" "}von{" "}
         <a href={"https://pimanrul.es"} target={"_blank"} rel={"noreferrer"}>
           pimanrules
-        </a>
-        . You can contact me on Twitter{" "}
-        <a
-          href={"https://twitter.com/pimanrules"}
-          target={"_blank"}
-          rel={"noreferrer"}
-        >
-          @pimanrules
-        </a>{" "}
-        or check out my good and/or bad videos on{" "}
-        <a
-          href={"https://youtube.com/pimanrules"}
-          target={"_blank"}
-          rel={"noreferrer"}
-        >
-          YouTube
-        </a>
-        .
-      </p>
-      <p>
-        To chat with other Pimantlers, check out the (unofficial){" "}
-        <a
-          href={"https://discord.gg/rc5pNWAA7P"}
-          target={"_blank"}
-          rel={"noreferrer"}
-        >
-          Semantle Discord server
-        </a>{" "}
-        or{" "}
-        <a
-          href={"https://reddit.com/r/pimantle"}
-          target={"_blank"}
-          rel={"noreferrer"}
-        >
-          Pimantle Subreddit
         </a>
         .
       </p>

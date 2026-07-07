@@ -117,7 +117,7 @@ function Guesses({
   function getGoodHint() {
     let bestGuess = guesses[guesses.length - 1];
     if (bestGuess.rank == 1) {
-      toast.error("Sorry, you've already got the best hint!");
+      toast.error("Du hast bereits den besten Hinweis erhalten!");
       return;
     }
 
@@ -138,7 +138,7 @@ function Guesses({
         true
       );
     } else {
-      toast.error("Sorry, we couldn't find a hint (somehow...).");
+      toast.error("Hinweis konnte leider nicht gefunden werden.");
     }
   }
 
@@ -152,7 +152,7 @@ function Guesses({
       .map((guess) => {
         let result = checkGuess(guess.word);
         if (result === undefined) {
-          toast.error(`I don't know the word "${guess.word}".`);
+        toast.error(`Das Wort „${guess.word}" ist mir nicht bekannt.`);
           inputBox.current?.animate(
             [
               { transform: "translateX(0px)" },
@@ -385,7 +385,7 @@ function Guesses({
         {
           <>
             <div className={`guess-setting bg-frigid`}>
-              <label htmlFor="toggleSort">Sort guesses chronologically</label>
+              <label htmlFor="toggleSort">Tipps chronologisch sortieren</label>
               <input
                 id="toggleSort"
                 type="checkbox"
@@ -412,18 +412,18 @@ function Guesses({
         <form onSubmit={submitGuess} className="guess-form" ref={inputBox}>
           <input
             type="text"
-            placeholder="Enter a guess"
+            placeholder="Tipp eingeben"
             id="guess"
             className="guess-input"
             autoCapitalize="none"
             autoComplete="off"
             autoFocus={true}
           />
-          <input type="submit" value="Guess" className="guess-submit" />
+          <input type="submit" value="Raten" className="guess-submit" />
           {guesses.length > 10 && (
             <input
               type="button"
-              value="Hint"
+              value="Hinweis"
               className="hint-button"
               onClick={getHint}
             />
@@ -432,7 +432,7 @@ function Guesses({
             !guesses.some((guess) => guess.rank === 1) && (
               <input
                 type="button"
-                value="Good hint"
+                value="Guter Hinweis"
                 className="give-up-button"
                 onClick={getGoodHint}
               />

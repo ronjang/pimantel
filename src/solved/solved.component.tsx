@@ -37,20 +37,17 @@ function Solved({
     let hintCount = getHintCount();
     let hintText = "";
     if (hintCount == 0) {
-      hintText = "no hints";
+      hintText = "ohne Hinweise";
     } else if (hintCount == 1) {
-      hintText = "1 hint";
+      hintText = "mit 1 Hinweis";
     } else {
-      hintText = `${hintCount} hints`;
+      hintText = `mit ${hintCount} Hinweisen`;
     }
 
-    let extraText = puzzleType == "semantle" ? "(on Pimantle) " : "";
-    return `solved ${getPuzzleName(
-      puzzleType,
-      currentPuzzle
-    )} ${extraText}with ${guesses.length} ${
-      guesses.length > 1 ? "guesses" : "guess"
-    } and ${hintText}!`;
+    let extraText = puzzleType == "semantle" ? "(auf Pimantel) " : "";
+    return `${getPuzzleName(puzzleType, currentPuzzle)} ${extraText}gelöst mit ${
+      guesses.length
+    } ${guesses.length > 1 ? "Tipps" : "Tipp"} und ${hintText}!`;
   }
 
   function getHintCount() {
@@ -63,7 +60,7 @@ function Solved({
     } else {
       setDownloadingImage(true);
       toast(
-        "Generating image, give me a sec... (this might not work great on some browsers)."
+        "Bild wird generiert, einen Moment... (funktioniert in manchen Browsern nicht perfekt)."
       );
       return new Promise((resolve) => {
         setTimeout(() => {
@@ -125,7 +122,7 @@ function Solved({
       text: getShareString(),
     };
     let errorMessage =
-      'Sorry, we couldn\'t share. Try using the "Copy" buttons instead, maybe?';
+      'Teilen leider nicht möglich. Versuch die „Kopieren"-Buttons?';
 
     if (withImage) {
       getImageBlob().then((blob: Blob) => {
@@ -157,7 +154,7 @@ function Solved({
 
   function copyVictory(withImage: boolean) {
     if (navigator.clipboard === undefined) {
-      toast.error("Sorry, your browser doesn't support copying to clipboard.");
+      toast.error("Dein Browser unterstützt das Kopieren in die Zwischenablage leider nicht.");
     }
     let shareText = getShareString() + "\n\n" + window.location.href;
     let textBlob = new Blob([shareText], { type: "text/plain" });
@@ -171,11 +168,11 @@ function Solved({
             }),
           ])
           .then(() => {
-            toast.success("Copied to clipboard!");
+            toast.success("In die Zwischenablage kopiert!");
           })
           .catch(() => {
             toast.error(
-              'Sorry, we weren\'t able to copy to clipboard. Try using "Copy (text)" instead?'
+              'Kopieren leider fehlgeschlagen. Versuch „Kopieren (Text)"?'
             );
           });
       });
@@ -189,10 +186,10 @@ function Solved({
         : navigator.clipboard.writeText(shareText)
       )
         .then(() => {
-          toast.success("Copied to clipboard!");
+          toast.success("In die Zwischenablage kopiert!");
         })
         .catch(() => {
-          toast.error("Sorry, we weren't able to copy to clipboard.");
+          toast.error("Kopieren leider fehlgeschlagen.");
         });
     }
   }
@@ -203,13 +200,13 @@ function Solved({
       {
         ...oldData[0],
         hovertemplate:
-          "<b>%{text}</b><br><br>Similarity: %{customdata[0]}<br>Rank: %{customdata[1]}<extra></extra>",
+          "<b>%{text}</b><br><br>Ähnlichkeit: %{customdata[0]}<br>Rang: %{customdata[1]}<extra></extra>",
       },
       oldData[1],
       oldData[2],
     ]);
     toast.warn(
-      "Explore mode enabled. You can now hover/tap on all nodes to see their similarity.\n\nWARNING: There are offensive words in the dataset, including slurs.",
+      "Erkunden-Modus aktiviert. Du kannst jetzt über alle Punkte hovern, um ihre Ähnlichkeit zu sehen.\n\nWARNUNG: Der Datensatz enthält anstößige Wörter, einschließlich Schimpfwörter.",
       {
         autoClose: false,
         position: "top-center",
@@ -221,8 +218,8 @@ function Solved({
     <div className="solved-container">
       <div className="congrats-text guess-entry bg-correct">
         <span>
-          You did it! You {getSolvedText()} The secret word was{" "}
-          <b>{secret?.word}</b>. New puzzle in{" "}
+          Geschafft! {getSolvedText()} Das Geheimwort war{" "}
+          <b>{secret?.word}</b>. Nächstes Rätsel in{" "}
           <Countdown date={nextPuzzleTime} daysInHours={true} />.
         </span>
       </div>
@@ -233,13 +230,13 @@ function Solved({
               <input
                 onClick={() => shareVictory(false)}
                 type="button"
-                value="Share (text)"
+                value="Teilen (Text)"
               />
               <input
                 onClick={() => shareVictory(true)}
                 disabled={downloadingImage}
                 type="button"
-                value="Share (text+image)"
+                value="Teilen (Text+Bild)"
               />
             </div>
           )}
@@ -247,25 +244,25 @@ function Solved({
         <input
           onClick={() => copyVictory(false)}
           type="button"
-          value="Copy (text)"
+          value="Kopieren (Text)"
         />
         <input
           onClick={() => copyVictory(true)}
           type="button"
-          value="Copy (image)"
+          value="Kopieren (Bild)"
         />
         <input
           onClick={() => downloadVictory()}
           disabled={downloadingImage}
           type="button"
-          value="Download"
+          value="Herunterladen"
         />
         {exploreMode || (
-          <input onClick={() => explore()} type="button" value="Explore" />
+          <input onClick={() => explore()} type="button" value="Erkunden" />
         )}
       </div>
       {downloadingImage && (
-        <div className="downloading">Just a sec, generating image...</div>
+        <div className="downloading">Einen Moment, Bild wird generiert...</div>
       )}
     </div>
   );

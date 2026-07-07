@@ -135,14 +135,23 @@ function App() {
       let urlPuzzleType = urlParams.get("type");
       let urlPuzzleIndex = parseInt(urlParams.get("puzzle") ?? "-1");
 
+      // Bonus ("Zufälliges Quiz") puzzles live at a high fixed block.
+      const BONUS_START = 900000;
+      const BONUS_COUNT = 10;
+      let isBonus =
+        urlPuzzleIndex >= BONUS_START &&
+        urlPuzzleIndex < BONUS_START + BONUS_COUNT;
+
       if (
         urlPuzzleIndex >= 0 &&
         urlPuzzleType?.startsWith("p") &&
-        urlPuzzleIndex < todaysPimantle
+        (urlPuzzleIndex < todaysPimantle || isBonus)
       ) {
         newPuzzleNumber = urlPuzzleIndex;
         setIsArchivePuzzle(true);
-        document.title = `Pimantel Archiv: Pimantel #${newPuzzleNumber}`;
+        document.title = isBonus
+          ? `Pimantel Bonus #${newPuzzleNumber - BONUS_START + 1}`
+          : `Pimantel Archiv: Pimantel #${newPuzzleNumber}`;
       }
 
       setNextPuzzleTime(pimantleEpoch.add(todaysPimantle + 1, "day").toDate());

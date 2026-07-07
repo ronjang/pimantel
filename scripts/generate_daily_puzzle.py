@@ -33,6 +33,12 @@ PIMANTEL_EPOCH = datetime(2026, 7, 7, 3, 0, 0, tzinfo=timezone.utc)
 # Generate today's puzzle plus this many days ahead (safety buffer)
 LOOKAHEAD = 3
 
+# Bonus ("Zufälliges Quiz") puzzles: a fixed block of extra puzzles a player
+# can play after solving the daily one. High numbers so they never collide
+# with real daily puzzles.
+BONUS_START = 900000
+BONUS_COUNT = 10
+
 # Spiral twist factor in radians. The outermost ring is rotated by this many
 # radians relative to the centre, curving the semantic arms into a galaxy-like
 # spiral. ~6 rad ≈ one full turn across the disk; tune freely.
@@ -184,6 +190,18 @@ def main():
     for p in range(base, base + LOOKAHEAD + 1):
         secret = pick_secret_word(p, pool)
         out_path = OUT_SECRET_DIR / f"secret_word_{p}.bin"
+        generate_bin(secret, vocab, display_to_idx, vectors, angles, out_path)
+
+    # Bonus puzzles for the "Zufälliges Quiz" button. Generated once (they are
+    # stable), each drawn from the pool with an offset so they differ from the
+    # daily words. Only regenerate if missing to keep daily runs fast.
+    print(f"Ensuring {BONUS_COUNT} bonus puzzles ({BONUS_START}..{BONUS_START + BONUS_COUNT - 1}) ...")
+    for i in range(BONUS_COUNT):
+        bonus_num = BONUS_START + i
+        out_path = OUT_SECRET_DIR / f"secret_word_{bonus_num}.bin"
+        if out_path.exists():
+            continue
+        secret = pick_secret_word(bonus_num, pool)
         generate_bin(secret, vocab, display_to_idx, vectors, angles, out_path)
 
     # Write the shields.io endpoint badge for the current daily puzzle number.

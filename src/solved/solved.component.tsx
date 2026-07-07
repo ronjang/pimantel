@@ -214,6 +214,48 @@ function Solved({
     );
   }
 
+  // ── Bonus "Zufälliges Quiz" puzzles ──────────────────────────────
+  const BONUS_START = 900000;
+  const BONUS_COUNT = 10;
+  const BONUS_PLAYED_KEY = "pimantel-bonus-played";
+
+  function getPlayedBonuses(): number[] {
+    try {
+      const raw = localStorage.getItem(BONUS_PLAYED_KEY);
+      return raw ? (JSON.parse(raw) as number[]) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  const currentIsBonus =
+    parseInt(currentPuzzle) >= BONUS_START &&
+    parseInt(currentPuzzle) < BONUS_START + BONUS_COUNT;
+
+  const playedBonuses = getPlayedBonuses();
+  const remainingBonuses = BONUS_COUNT - playedBonuses.length;
+
+  function playRandomBonus() {
+    const played = getPlayedBonuses();
+    // Remember the just-solved bonus puzzle so it isn't replayed.
+    if (currentIsBonus && !played.includes(parseInt(currentPuzzle))) {
+      played.push(parseInt(currentPuzzle));
+    }
+    const remaining: number[] = [];
+    for (let i = 0; i < BONUS_COUNT; i++) {
+      const n = BONUS_START + i;
+      if (!played.includes(n)) remaining.push(n);
+    }
+    if (remaining.length === 0) {
+      localStorage.setItem(BONUS_PLAYED_KEY, JSON.stringify(played));
+      toast.info("Du hast alle Bonus-Rätsel gespielt! Komm morgen wieder. 🎉");
+      return;
+    }
+    const next = remaining[Math.floor(Math.random() * remaining.length)];
+    localStorage.setItem(BONUS_PLAYED_KEY, JSON.stringify(played));
+    window.location.href = `/?type=pimantle&puzzle=${next}`;
+  }
+
   return (
     <div className="solved-container">
       <div className="congrats-text guess-entry bg-correct">
@@ -224,6 +266,18 @@ function Solved({
         </span>
       </div>
       <div className="reward-buttons">
+        {remainingBonuses > 0 ? (
+          <input
+            onClick={playRandomBonus}
+            type="button"
+            className="bonus-quiz-button"
+            value={`Zufälliges Quiz (${remainingBonuses})`}
+          />
+        ) : (
+          <span className="bonus-quiz-done">
+            Alle Bonus-Rätsel gespielt 🎉
+          </span>
+        )}
         {typeof navigator.canShare !== "undefined" &&
           navigator.canShare({ text: "test" }) && (
             <div>

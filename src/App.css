@@ -324,6 +324,25 @@ input:checked + .switch-label .switch-button {
   flex-direction: column-reverse;
 }
 
+.bonus-quiz-button {
+  background-color: rgba(26, 255, 199, 0.18) !important;
+  border-color: rgba(26, 255, 199, 0.7) !important;
+  font-weight: 600;
+}
+
+.bonus-quiz-button:hover {
+  background-color: rgba(26, 255, 199, 0.35) !important;
+  border-color: rgba(26, 255, 199, 1) !important;
+}
+
+.bonus-quiz-done {
+  display: inline-block;
+  font-size: 0.9rem;
+  opacity: 0.85;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .welcome-panel {
   flex-direction: column;
   align-items: stretch;

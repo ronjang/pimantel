@@ -84,7 +84,7 @@ function GuessEntry({
         </div>
         <div className="guess-flavor">
           {guess.isEgg
-            ? "🥚"
+            ? "🪵🍌"
             : guess.isHint
             ? "Hinweis"
             : getFlavorText(guess.rank)}

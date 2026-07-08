@@ -10,7 +10,7 @@ function GuessEntry({
 }) {
   function getFlavorText(rank: number): string {
     if (rank === 0) {
-      return "SOLVED! 🎯";
+      return "GELÖST! 🎯";
     } else if (rank < 10) {
       return "🔥🔥🔥";
     } else if (rank < 50) {
@@ -18,23 +18,23 @@ function GuessEntry({
     } else if (rank < 100) {
       return "🔥";
     } else if (rank < 200) {
-      return "HOT";
+      return "Heiß";
     } else if (rank < 500) {
       return "Warm";
     } else if (rank < 1_000) {
-      return "Warm";
+      return "Lauwarm";
     } else if (rank < 3_000) {
-      return "Tepid";
+      return "Lau";
     } else if (rank < 10_000) {
-      return "Cool";
+      return "Kühl";
     } else if (rank < 20_000) {
-      return "Chilly";
+      return "Frisch";
     } else if (rank < 50_000) {
-      return "Cold";
+      return "Kalt";
     } else if (rank < 75_000) {
-      return "Frigid";
+      return "Eisig";
     } else {
-      return "Freezing";
+      return "Eiskalt";
     }
   }
 
@@ -83,7 +83,7 @@ function GuessEntry({
           {guess.rank !== 0 && (guess.rank < 1000 ? "#" + guess.rank : "--")}
         </div>
         <div className="guess-flavor">
-          {guess.isHint ? "Hint" : getFlavorText(guess.rank)}
+          {guess.isHint ? "Hinweis" : getFlavorText(guess.rank)}
         </div>
       </div>
     </div>

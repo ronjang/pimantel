@@ -20,7 +20,7 @@ function ArchiveDropdown({
           ✕
         </div>
         <div className="archive-column">
-          <h1 className="archive-heading">Daily Puzzles</h1>
+          <h1 className="archive-heading">Tägliche Rätsel</h1>
           <a href="/" className="todays-pimantle archive-puzzle">
             <div className="tile-title">Heutiges Pimantel</div>
           </a>
@@ -30,8 +30,8 @@ function ArchiveDropdown({
             rel={"noreferrer"}
             className="todays-semantle archive-puzzle"
           >
-            <div className="tile-title">Today&apos;s Pimantle</div>
-            <div className="semantle-footnote">(English, auf pimanrul.es)</div>
+            <div className="tile-title">Englisches Pimantle</div>
+            <div className="semantle-footnote">(auf pimanrul.es)</div>
           </a>
 
           <h1 className="archive-heading">Pimantel-Archiv</h1>
@@ -42,7 +42,7 @@ function ArchiveDropdown({
 
         <div className="archive-column">
           <h1 className="archive-heading">Links</h1>
-          <h2 className="archive-subheading">Created by</h2>
+          <h2 className="archive-subheading">Erstellt von</h2>
           <div className="social-panel">
             <a
               href="https://manjang.de"
@@ -61,7 +61,7 @@ function ArchiveDropdown({
               GitHub
             </a>
           </div>
-          <h2 className="archive-subheading">Based on</h2>
+          <h2 className="archive-subheading">Basiert auf</h2>
           <div className="social-panel">
             <a
               href="https://semantle.pimanrul.es"

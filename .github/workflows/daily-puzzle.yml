@@ -47,6 +47,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: daily German puzzle $(cat .github/badge/daily.json | python -c 'import sys,json;print(json.load(sys.stdin)["message"])')"
+            PUZZLE_NUM=$(python -c 'import json;print(json.load(open(".github/badge/daily.json"))["message"].lstrip("#"))')
+            git commit -m "chore: daily German puzzle Nr. ${PUZZLE_NUM}"
             git push
           fi

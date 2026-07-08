@@ -448,7 +448,7 @@ function App() {
       {!languageDataAvailable && (
         <div className="loading-container">
           <div className="language-unavailable">
-            <h2>🚧 Not available yet</h2>
+            <h2>🚧 Noch nicht verfügbar</h2>
             <p>
               Für dieses Rätsel gibt es noch keine Daten. Schau bald wieder
               vorbei!

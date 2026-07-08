@@ -60,7 +60,7 @@ function Solved({
     } else {
       setDownloadingImage(true);
       toast(
-        "Generating image, einen Moment... (funktioniert in manchen Browsern nicht perfekt)."
+        "Bild wird generiert, einen Moment... (funktioniert in manchen Browsern nicht perfekt)."
       );
       return new Promise((resolve) => {
         setTimeout(() => {
@@ -122,7 +122,7 @@ function Solved({
       text: getShareString(),
     };
     let errorMessage =
-      'Share leider nicht möglich. Versuch die "Copy"-Buttons?';
+      'Teilen leider nicht möglich. Versuch die "Kopieren"-Buttons?';
 
     if (withImage) {
       getImageBlob().then((blob: Blob) => {
@@ -149,12 +149,12 @@ function Solved({
   }
 
   function getShareString() {
-    return `I ${getSolvedText()}`;
+    return `Ich habe ${getSolvedText()}`;
   }
 
   function copyVictory(withImage: boolean) {
     if (navigator.clipboard === undefined) {
-      toast.error("Dein Browser unterstützt Copy to Clipboard leider nicht.");
+      toast.error("Dein Browser unterstützt das Kopieren in die Zwischenablage leider nicht.");
     }
     let shareText = getShareString() + "\n\n" + window.location.href;
     let textBlob = new Blob([shareText], { type: "text/plain" });
@@ -168,11 +168,11 @@ function Solved({
             }),
           ])
           .then(() => {
-            toast.success("Copied to clipboard!");
+            toast.success("In die Zwischenablage kopiert!");
           })
           .catch(() => {
             toast.error(
-              'Copy leider fehlgeschlagen. Versuch "Copy (text)"?'
+              'Kopieren leider fehlgeschlagen. Versuch "Kopieren (Text)"?'
             );
           });
       });
@@ -186,10 +186,10 @@ function Solved({
         : navigator.clipboard.writeText(shareText)
       )
         .then(() => {
-          toast.success("Copied to clipboard!");
+          toast.success("In die Zwischenablage kopiert!");
         })
         .catch(() => {
-          toast.error("Copy leider fehlgeschlagen.");
+          toast.error("Kopieren leider fehlgeschlagen.");
         });
     }
   }
@@ -284,13 +284,13 @@ function Solved({
               <input
                 onClick={() => shareVictory(false)}
                 type="button"
-                value="Share (text)"
+                value="Teilen (Text)"
               />
               <input
                 onClick={() => shareVictory(true)}
                 disabled={downloadingImage}
                 type="button"
-                value="Share (text+image)"
+                value="Teilen (Text+Bild)"
               />
             </div>
           )}
@@ -298,21 +298,21 @@ function Solved({
         <input
           onClick={() => copyVictory(false)}
           type="button"
-          value="Copy (text)"
+          value="Kopieren (Text)"
         />
         <input
           onClick={() => copyVictory(true)}
           type="button"
-          value="Copy (image)"
+          value="Kopieren (Bild)"
         />
         <input
           onClick={() => downloadVictory()}
           disabled={downloadingImage}
           type="button"
-          value="Download"
+          value="Herunterladen"
         />
         {exploreMode || (
-          <input onClick={() => explore()} type="button" value="Explore" />
+          <input onClick={() => explore()} type="button" value="Erkunden" />
         )}
       </div>
       {downloadingImage && (

@@ -148,6 +148,20 @@ function Guesses({
 
   function checkGuess(guess: string): Word | undefined {
     const normalized = normalizeGuess(guess, language);
+
+    // 🥚 Easter egg: "Holzbanane" always works and always ranks #67.
+    // Fully additive — it never touches the real word data/plot pipeline,
+    // it just borrows the position of the actual rank-67 word so it renders
+    // sensibly, and overrides the label + rank.
+    if (normalized === normalizeGuess("Holzbanane", language)) {
+      const anchor = parsedWords.find((w) => w.rank === 67) ?? parsedWords[0];
+      return {
+        ...anchor,
+        word: "Holzbanane",
+        rank: 67,
+      } as Word;
+    }
+
     return parsedWords.find(
       (word) => normalizeGuess(word.word, language) === normalized
     );

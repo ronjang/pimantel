@@ -431,6 +431,13 @@ input:checked + .switch-label .switch-button {
   border: 1px solid var(--border-color);
 }
 
+.bg-egg {
+  background-color: rgba(88, 24, 148, calc(max(0.85, var(--min-opacity))));
+  --border-color: rgba(168, 85, 247, 0.8);
+  color: white;
+  --outline-color: rgba(0, 0, 0, 0.5);
+}
+
 .bg-correct {
   background-color: rgba(26, 255, 199, calc(max(0.9, var(--min-opacity))));
   --border-color: rgba(26, 255, 199, 0.7);

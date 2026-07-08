@@ -150,15 +150,21 @@ function Guesses({
     const normalized = normalizeGuess(guess, language);
 
     // 🥚 Easter egg: "Holzbanane" always works and always ranks #67.
-    // Fully additive — it never touches the real word data/plot pipeline,
-    // it just borrows the position of the actual rank-67 word so it renders
-    // sensibly, and overrides the label + rank.
+    // Fully additive — it never touches the real word data/plot pipeline.
+    // It is pinned to a FIXED spot somewhat close to the middle (small
+    // radius) so it always renders in the same recognizable place, borrowing
+    // an anchor word only for the remaining fields (similarity/frequency).
     if (normalized === normalizeGuess("Holzbanane", language)) {
       const anchor = parsedWords.find((w) => w.rank === 67) ?? parsedWords[0];
       return {
         ...anchor,
         word: "Holzbanane",
         rank: 67,
+        // Fixed position near the centre (radius ≈ 0.06 at a fixed angle),
+        // so the egg always sits in the same spot regardless of the puzzle.
+        x: 0.045,
+        y: 0.04,
+        isEgg: true,
       } as Word;
     }
 

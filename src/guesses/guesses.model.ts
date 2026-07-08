@@ -9,6 +9,7 @@ export type Word = {
     guessIndex?: number;
     isHint?: boolean;
     isBulk?: boolean;
+    isEgg?: boolean;
 };
 
 export type SubmitGuessesParams = {

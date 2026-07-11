@@ -3,6 +3,13 @@ name: Deploy static site to gh-pages
 on:
   push:
     branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/deploy-gh-pages.yml"
   workflow_dispatch: {}
 
 permissions:
@@ -30,6 +37,9 @@ jobs:
       - name: Build
         env:
           CI: "false"
+          GENERATE_SOURCEMAP: "false"
+          REACT_APP_MULTIPLAYER_ENABLED: "true"
+          REACT_APP_MULTIPLAYER_SOCKET_URL: "https://api.pimantel.de"
         run: npm run build
 
       - name: Publish to gh-pages

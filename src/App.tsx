@@ -407,7 +407,7 @@ function App() {
                 },
               },
             hovertemplate:
-                "<b>%{text}</b><br><br>Ähnlichkeit: %{customdata[0]}<br>Rang: %{customdata[1]}<br>Dein Tipp: %{customdata[2]}<extra></extra>",
+                "<b>%{text}</b><br><br>Ähnlichkeit: %{customdata[0]}<br>Rang: %{customdata[1]}<br>Dein Versuch: %{customdata[2]}<extra></extra>",
             },
           ]);
 

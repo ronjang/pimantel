@@ -26,7 +26,7 @@ function ArchiveTile({ link }: { link: ArchiveLink }) {
         <div className="tile-guesses tile-started">
           {link.guesses}
           <br />
-          {link.guesses === 1 ? "Tipp" : "Tipps"}
+          {link.guesses === 1 ? "Versuch" : "Versuche"}
         </div>
       ) : (
         <div className="tile-guesses tile-unstarted">Nicht gestartet</div>

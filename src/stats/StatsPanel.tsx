@@ -26,8 +26,8 @@ function StatsPanel({
       <table>
         <thead>
           <tr>
-            <th>Ø Tipps</th>
-            <th>Bestes Ergebnis</th>
+            <th>Durchschnittliche Versuche</th>
+            <th>Bestwert (min. Versuche)</th>
             <th>Spieler gelöst</th>
             <th>Spieler versucht</th>
           </tr>
@@ -77,7 +77,7 @@ function StatsPanel({
                 family: "var(--body-font)",
               },
             },
-            hovertemplate: "<b>%{x}+ Tipps, %{y} Spieler</b><extra></extra>",
+            hovertemplate: "<b>%{x}+ Versuche, %{y} Spieler</b><extra></extra>",
           },
         ]}
         layout={{

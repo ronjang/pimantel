@@ -414,7 +414,9 @@ function Guesses({
         {
           <>
             <div className={`guess-setting bg-frigid`}>
-              <label htmlFor="toggleSort">Tipps chronologisch sortieren</label>
+              <label htmlFor="toggleSort">
+                Versuche chronologisch sortieren
+              </label>
               <input
                 id="toggleSort"
                 type="checkbox"

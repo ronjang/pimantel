@@ -24,7 +24,7 @@ function WelcomePanel({ isArchivePuzzle }: WelcomePanelProperties) {
         <div className="welcome-body">
           <p>
             Errate {isArchivePuzzle ? "das" : "das heutige"} Geheimwort. Je
-            näher an der Mitte, desto ähnlicher dein Tipp.
+            näher an der Mitte, desto ähnlicher dein Versuch.
           </p>
           <ul>
             <li>
@@ -32,7 +32,7 @@ function WelcomePanel({ isArchivePuzzle }: WelcomePanelProperties) {
               egal.
             </li>
             <li>Folge den „Armen" der Karte Richtung Zentrum.</li>
-            <li>Nach genug Tipps schaltest du <b>Hinweise</b> frei.</li>
+            <li>Nach genug Versuchen schaltest du <b>Hinweise</b> frei.</li>
           </ul>
           <p className="welcome-credits">
             Deutsche Version von{" "}

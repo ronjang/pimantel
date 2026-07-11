@@ -47,7 +47,7 @@ function Solved({
     let extraText = puzzleType == "semantle" ? "(auf Pimantel) " : "";
     return `${getPuzzleName(puzzleType, currentPuzzle)} ${extraText}gelöst mit ${
       guesses.length
-    } ${guesses.length > 1 ? "Tipps" : "Tipp"} und ${hintText}!`;
+    } ${guesses.length > 1 ? "Versuchen" : "Versuch"} und ${hintText}!`;
   }
 
   function getHintCount() {

@@ -469,7 +469,6 @@ function App() {
   useEffect(() => {
     if (
       !MULTIPLAYER_ENABLED ||
-      isArchivePuzzle ||
       currentPuzzle === "?" ||
       parsedWords.length === 0
     ) {
@@ -625,6 +624,9 @@ function App() {
 
     setSocketGuessHandler(
       () => (x: number, y: number, solvedState: SolveStatus | undefined) => {
+        if (isArchivePuzzle) {
+          return;
+        }
         guessQueueRef.current.push({ x, y, solveStatus: solvedState });
         persistQueue();
         flushQueue();

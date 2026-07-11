@@ -24,6 +24,7 @@ import { io, Socket } from "socket.io-client";
 import { Subject } from "rxjs";
 import {
   ClientEvent,
+  GuessAck,
   LesserStatsUpdate,
   ServerEvent,
   SolveStatus,
@@ -72,6 +73,20 @@ function mapStatsUpdateToStatus(
       ...previous,
       totalGuesses: update.totalGuesses,
     };
+  }
+
+  type QueuedGuess = {
+    x: number;
+    y: number;
+    solveStatus: SolveStatus | undefined;
+  };
+
+  function getStatsCacheKey(puzzleType: PuzzleType, currentPuzzle: string): string {
+    return `pimantel-stats-snapshot-${puzzleType}-${currentPuzzle}`;
+  }
+
+  function getGuessQueueKey(puzzleType: PuzzleType, currentPuzzle: string): string {
+    return `pimantel-pending-guesses-${puzzleType}-${currentPuzzle}`;
   }
 
   return {
@@ -139,6 +154,7 @@ function App() {
 
   let [nextPuzzleTime, setNextPuzzleTime] = useState<Date>(new Date());
   let [stats, setStats] = useState<StatsStatus>(buildEmptyStats());
+  let [statsLoaded, setStatsLoaded] = useState<boolean>(false);
   let [socketState, setSocketState] = useState<
     "connected" | "connecting" | "closed"
   >("closed");
@@ -153,6 +169,10 @@ function App() {
     new Subject<{ x: number; y: number }>()
   );
   const socketRef = useRef<Socket<ServerEvent, ClientEvent> | null>(null);
+  const statsLoadedRef = useRef<boolean>(false);
+  const guessQueueRef = useRef<QueuedGuess[]>([]);
+  const queueTimerRef = useRef<number | null>(null);
+  const queueFlushInProgressRef = useRef<boolean>(false);
 
   let defaultLayout = {
     paper_bgcolor: "rgba(0,0,0,0)",
@@ -380,6 +400,33 @@ function App() {
   }, [plotData, plotLayout]);
 
   useEffect(() => {
+    statsLoadedRef.current = statsLoaded;
+  }, [statsLoaded]);
+
+  useEffect(() => {
+    if (currentPuzzle === "?") {
+      return;
+    }
+
+    const key = getStatsCacheKey(puzzleType, currentPuzzle);
+    const cached = localStorage.getItem(key);
+    if (!cached) {
+      setStats(buildEmptyStats());
+      setStatsLoaded(false);
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(cached) as StatsStatus;
+      setStats(parsed);
+      setStatsLoaded(true);
+    } catch {
+      setStats(buildEmptyStats());
+      setStatsLoaded(false);
+    }
+  }, [currentPuzzle, puzzleType]);
+
+  useEffect(() => {
     if (
       !MULTIPLAYER_ENABLED ||
       isArchivePuzzle ||
@@ -390,7 +437,6 @@ function App() {
       socketRef.current = null;
       setSocketState("closed");
       setPlayersOnline(0);
-      setStats(buildEmptyStats());
       setSocketGuessHandler(() => () => {});
       setSocketDisconnectCallback(() => () => {});
       return;
@@ -405,6 +451,64 @@ function App() {
       setSocketDisconnectCallback(() => () => {});
       return;
     }
+
+    const queueKey = getGuessQueueKey(puzzleType, currentPuzzle);
+    try {
+      const rawQueue = localStorage.getItem(queueKey);
+      guessQueueRef.current = rawQueue
+        ? (JSON.parse(rawQueue) as QueuedGuess[])
+        : [];
+    } catch {
+      guessQueueRef.current = [];
+    }
+
+    const persistQueue = () => {
+      localStorage.setItem(queueKey, JSON.stringify(guessQueueRef.current));
+    };
+
+    const flushQueue = () => {
+      if (socket.connected === false) {
+        return;
+      }
+      if (queueFlushInProgressRef.current) {
+        return;
+      }
+      const nextGuess = guessQueueRef.current[0];
+      if (!nextGuess) {
+        return;
+      }
+
+      queueFlushInProgressRef.current = true;
+      let finished = false;
+      const timeoutId = window.setTimeout(() => {
+        if (finished) {
+          return;
+        }
+        finished = true;
+        queueFlushInProgressRef.current = false;
+      }, 8000);
+
+      socket.emit(
+        "guess",
+        nextGuess.x,
+        nextGuess.y,
+        nextGuess.solveStatus,
+        (ack: GuessAck) => {
+          if (finished) {
+            return;
+          }
+          finished = true;
+          window.clearTimeout(timeoutId);
+          queueFlushInProgressRef.current = false;
+
+          if (ack && ack.ok) {
+            guessQueueRef.current.shift();
+            persistQueue();
+            flushQueue();
+          }
+        }
+      );
+    };
 
     const playerIdStorageKey = "pimantel-player-id";
     let playerId = localStorage.getItem(playerIdStorageKey);
@@ -421,11 +525,11 @@ function App() {
     });
     socketRef.current = socket;
     setSocketState("connecting");
-    setStats(buildEmptyStats());
 
     socket.on("connect", () => {
       setSocketState("connected");
       socket.emit("joinGame", `${puzzleType}-${currentPuzzle}`);
+      flushQueue();
     });
 
     socket.on("disconnect", () => {
@@ -451,16 +555,34 @@ function App() {
 
     socket.on("guessWithStats", (x: number, y: number, update) => {
       socketGuessObservable.current.next({ x, y });
-      setStats((previous) => mapStatsUpdateToStatus(update, previous));
+      if (!statsLoadedRef.current) {
+        const nextStats = mapStatsUpdateToStatus(update, buildEmptyStats());
+        setStats(nextStats);
+        setStatsLoaded(true);
+        localStorage.setItem(
+          getStatsCacheKey(puzzleType, currentPuzzle),
+          JSON.stringify(nextStats)
+        );
+      }
     });
 
     socket.on("statsUpdate", (update) => {
-      setStats((previous) => mapStatsUpdateToStatus(update, previous));
+      if (!statsLoadedRef.current) {
+        const nextStats = mapStatsUpdateToStatus(update, buildEmptyStats());
+        setStats(nextStats);
+        setStatsLoaded(true);
+        localStorage.setItem(
+          getStatsCacheKey(puzzleType, currentPuzzle),
+          JSON.stringify(nextStats)
+        );
+      }
     });
 
     setSocketGuessHandler(
       () => (x: number, y: number, solvedState: SolveStatus | undefined) => {
-        socket.emit("guess", x, y, solvedState);
+        guessQueueRef.current.push({ x, y, solveStatus: solvedState });
+        persistQueue();
+        flushQueue();
       }
     );
 
@@ -470,7 +592,16 @@ function App() {
       socket.disconnect();
     });
 
+    queueTimerRef.current = window.setInterval(() => {
+      flushQueue();
+    }, 10000);
+
     return () => {
+      if (queueTimerRef.current !== null) {
+        window.clearInterval(queueTimerRef.current);
+        queueTimerRef.current = null;
+      }
+      queueFlushInProgressRef.current = false;
       if (socketRef.current === socket) {
         socketRef.current = null;
       }
@@ -620,6 +751,7 @@ function App() {
               puzzleType={puzzleType}
               currentPuzzle={currentPuzzle}
               stats={stats}
+              statsLoaded={statsLoaded}
               socketState={socketState}
               socketGuessHandler={socketGuessHandler}
               scroller={scroller}

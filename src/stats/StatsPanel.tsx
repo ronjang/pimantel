@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { StatsStatus } from "./stats.model";
 import Plot from "react-plotly.js";
 
@@ -10,10 +10,6 @@ function StatsPanel({
   stats: StatsStatus;
 }) {
   let [pinned, setPinned] = useState(false);
-
-  useEffect(() => {
-    console.log("stats!", stats);
-  }, [stats]);
 
   return (
     <div
@@ -30,27 +26,7 @@ function StatsPanel({
       <table>
         <thead>
           <tr>
-            <th>Tipps gesamt</th>
-            <th>Spieler gestartet</th>
-            <th>Ø Tipps bisher</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{stats.totalGuesses.toLocaleString()}</td>
-            <td>{stats.totalPlayersStarted.toLocaleString()}</td>
-            <td>
-              {stats.totalPlayersStarted > 0
-                ? (stats.totalGuesses / stats.totalPlayersStarted).toFixed(1)
-                : "--"}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <table>
-        <thead>
-          <tr>
-            <th>Lösungen</th>
+            <th>Spieler gelöst</th>
             <th>Ø Tipps bis Lösung</th>
           </tr>
         </thead>
@@ -93,8 +69,7 @@ function StatsPanel({
                 family: "var(--body-font)",
               },
             },
-            hovertemplate:
-              "<b>%{x}+ Tipps, %{y} Spieler</b><extra></extra>",
+            hovertemplate: "<b>%{x}+ Tipps, %{y} Lösung(en)</b><extra></extra>",
           },
         ]}
         layout={{

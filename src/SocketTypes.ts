@@ -10,9 +10,18 @@ export interface ServerEvent {
 }
 
 export interface ClientEvent {
-  guess: (x: number, y: number, solveStatus: SolveStatus | undefined) => void;
+  guess: (
+    x: number,
+    y: number,
+    solveStatus: SolveStatus | undefined,
+    ack?: (result: GuessAck) => void
+  ) => void;
   joinGame: (game: string) => void;
 }
+
+export type GuessAck = {
+  ok: boolean;
+};
 
 export type SolveStatus = {
   guessesUsed: number;

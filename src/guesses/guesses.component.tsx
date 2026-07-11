@@ -33,6 +33,7 @@ function Guesses({
   puzzleType,
   currentPuzzle,
   stats,
+  statsLoaded,
   socketState,
   socketGuessHandler,
   scroller,
@@ -52,6 +53,7 @@ function Guesses({
   puzzleType: PuzzleType;
   currentPuzzle: string;
   stats: StatsStatus;
+  statsLoaded: boolean;
   socketState: string;
   socketGuessHandler: (
     x: number,
@@ -426,7 +428,7 @@ function Guesses({
           </>
         }
 
-        {socketState === "connected" && (
+        {statsLoaded && (
           <StatsPanel
             puzzleName={getPuzzleName(puzzleType, currentPuzzle)}
             stats={stats}

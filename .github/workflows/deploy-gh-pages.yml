@@ -29,14 +29,15 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
 
       - name: Read app version
         id: app_version
-        run: echo "value=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+        run: |
+          node -e "process.stdout.write('value=' + require('./package.json').version)" >> "$GITHUB_OUTPUT"
 
       - name: Build
         env:

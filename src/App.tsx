@@ -40,6 +40,19 @@ const MULTIPLAYER_SOCKET_URL =
     ? "http://localhost:8000"
     : `${window.location.protocol}//api.pimantel.de`);
 
+function generatePlayerId(): string {
+  const cryptoApi = window.crypto;
+  if (cryptoApi && typeof cryptoApi.getRandomValues === "function") {
+    const bytes = new Uint8Array(16);
+    cryptoApi.getRandomValues(bytes);
+    return Array.from(bytes, (value) => value.toString(16).padStart(2, "0")).join(
+      ""
+    );
+  }
+
+  return `${Date.now()}-fallback-player-id`;
+}
+
 function buildEmptyStats(): StatsStatus {
   return {
     totalGuesses: 0,
@@ -396,9 +409,7 @@ function App() {
     const playerIdStorageKey = "pimantel-player-id";
     let playerId = localStorage.getItem(playerIdStorageKey);
     if (!playerId) {
-      playerId = window.crypto?.randomUUID
-        ? window.crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      playerId = generatePlayerId();
       localStorage.setItem(playerIdStorageKey, playerId);
     }
 

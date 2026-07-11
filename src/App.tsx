@@ -96,7 +96,10 @@ function mapStatsUpdateToStatus(
     totalPlayersStarted: update.total_players_started || 0,
     totalSolves: update.total_solves || 0,
     totalSolveGuesses: update.total_guesses_for_solves || 0,
-    lowestSolveGuesses: update.lowest_guesses_to_solve,
+    lowestSolveGuesses:
+      typeof update.lowest_guesses_to_solve === "number"
+        ? update.lowest_guesses_to_solve
+        : null,
     buckets: [
       update.solve_bucket_1_20,
       update.solve_bucket_21_40,

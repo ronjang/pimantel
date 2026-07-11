@@ -40,7 +40,7 @@ function StatsPanel({
                 : "--"}
             </td>
             <td>
-              {stats.lowestSolveGuesses !== null
+              {stats.lowestSolveGuesses != null
                 ? stats.lowestSolveGuesses.toLocaleString()
                 : "--"}
             </td>

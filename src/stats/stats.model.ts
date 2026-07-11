@@ -4,5 +4,6 @@ export type StatsStatus = {
   totalSolves: number;
   totalSolveGuesses: number;
   lowestSolveGuesses: number | null;
+  focusedAverageGuesses: number | null;
   buckets: number[];
 };

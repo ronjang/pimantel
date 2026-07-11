@@ -35,8 +35,8 @@ function StatsPanel({
         <tbody>
           <tr>
             <td>
-              {stats.totalPlayersStarted > 0
-                ? (stats.totalGuesses / stats.totalPlayersStarted).toFixed(1)
+              {stats.focusedAverageGuesses != null
+                ? stats.focusedAverageGuesses.toFixed(1)
                 : "--"}
             </td>
             <td>
@@ -106,13 +106,13 @@ function StatsPanel({
               type: "line",
               name: "Par",
               x0:
-                stats.totalPlayersStarted === 0
+                stats.focusedAverageGuesses == null
                   ? 0
-                  : stats.totalGuesses / stats.totalPlayersStarted,
+                  : stats.focusedAverageGuesses,
               x1:
-                stats.totalPlayersStarted === 0
+                stats.focusedAverageGuesses == null
                   ? 0
-                  : stats.totalGuesses / stats.totalPlayersStarted,
+                  : stats.focusedAverageGuesses,
               y0: 0,
               y1: 1,
               yref: "paper",

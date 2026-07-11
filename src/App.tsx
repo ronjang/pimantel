@@ -76,6 +76,7 @@ function buildEmptyStats(): StatsStatus {
     totalSolves: 0,
     totalSolveGuesses: 0,
     lowestSolveGuesses: null,
+    focusedAverageGuesses: null,
     buckets: new Array(25).fill(0),
   };
 }
@@ -99,6 +100,10 @@ function mapStatsUpdateToStatus(
     lowestSolveGuesses:
       typeof update.lowest_guesses_to_solve === "number"
         ? update.lowest_guesses_to_solve
+        : null,
+    focusedAverageGuesses:
+      typeof update.focused_average_guesses === "number"
+        ? update.focused_average_guesses
         : null,
     buckets: [
       update.solve_bucket_1_20,
@@ -440,7 +445,18 @@ function App() {
 
     try {
       const parsed = JSON.parse(cached) as StatsStatus;
-      setStats(parsed);
+      setStats({
+        ...buildEmptyStats(),
+        ...parsed,
+        lowestSolveGuesses:
+          typeof parsed.lowestSolveGuesses === "number"
+            ? parsed.lowestSolveGuesses
+            : null,
+        focusedAverageGuesses:
+          typeof parsed.focusedAverageGuesses === "number"
+            ? parsed.focusedAverageGuesses
+            : null,
+      });
       setStatsLoaded(true);
       statsLoadedRef.current = true;
     } catch {

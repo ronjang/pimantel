@@ -79,20 +79,6 @@ function mapStatsUpdateToStatus(
     };
   }
 
-  type QueuedGuess = {
-    x: number;
-    y: number;
-    solveStatus: SolveStatus | undefined;
-  };
-
-  function getStatsCacheKey(puzzleType: PuzzleType, currentPuzzle: string): string {
-    return `pimantel-stats-snapshot-${puzzleType}-${currentPuzzle}`;
-  }
-
-  function getGuessQueueKey(puzzleType: PuzzleType, currentPuzzle: string): string {
-    return `pimantel-pending-guesses-${puzzleType}-${currentPuzzle}`;
-  }
-
   return {
     totalGuesses: update.total_guesses || 0,
     totalPlayersStarted: update.total_players_started || 0,
@@ -126,6 +112,20 @@ function mapStatsUpdateToStatus(
       update.solve_bucket_481_500,
     ],
   };
+}
+
+type QueuedGuess = {
+  x: number;
+  y: number;
+  solveStatus: SolveStatus | undefined;
+};
+
+function getStatsCacheKey(puzzleType: PuzzleType, currentPuzzle: string): string {
+  return `pimantel-stats-snapshot-${puzzleType}-${currentPuzzle}`;
+}
+
+function getGuessQueueKey(puzzleType: PuzzleType, currentPuzzle: string): string {
+  return `pimantel-pending-guesses-${puzzleType}-${currentPuzzle}`;
 }
 
 function App() {

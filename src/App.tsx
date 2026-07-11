@@ -190,6 +190,7 @@ function App() {
   );
   const socketRef = useRef<Socket<ServerEvent, ClientEvent> | null>(null);
   const statsLoadedRef = useRef<boolean>(false);
+  const statsHydratedFromSocketRef = useRef<boolean>(false);
   const guessQueueRef = useRef<QueuedGuess[]>([]);
   const queueTimerRef = useRef<number | null>(null);
   const queueFlushInProgressRef = useRef<boolean>(false);
@@ -476,6 +477,7 @@ function App() {
     }
 
     const queueKey = getGuessQueueKey(puzzleType, currentPuzzle);
+    statsHydratedFromSocketRef.current = false;
     try {
       const rawQueue = localStorage.getItem(queueKey);
       guessQueueRef.current = rawQueue
@@ -578,10 +580,12 @@ function App() {
 
     socket.on("guessWithStats", (x: number, y: number, update) => {
       socketGuessObservable.current.next({ x, y });
-      if (!statsLoadedRef.current) {
+      if (!statsHydratedFromSocketRef.current) {
         const nextStats = mapStatsUpdateToStatus(update, buildEmptyStats());
         setStats(nextStats);
         setStatsLoaded(true);
+        statsLoadedRef.current = true;
+        statsHydratedFromSocketRef.current = true;
         localStorage.setItem(
           getStatsCacheKey(puzzleType, currentPuzzle),
           JSON.stringify(nextStats)
@@ -590,10 +594,12 @@ function App() {
     });
 
     socket.on("statsUpdate", (update) => {
-      if (!statsLoadedRef.current) {
+      if (!statsHydratedFromSocketRef.current) {
         const nextStats = mapStatsUpdateToStatus(update, buildEmptyStats());
         setStats(nextStats);
         setStatsLoaded(true);
+        statsLoadedRef.current = true;
+        statsHydratedFromSocketRef.current = true;
         localStorage.setItem(
           getStatsCacheKey(puzzleType, currentPuzzle),
           JSON.stringify(nextStats)

@@ -18,9 +18,83 @@ import Guesses from "./guesses/guesses.component";
 // @ts-ignore
 import Plotly from "plotly.js-gl2d-dist-min";
 import { GameLanguage, LANGUAGE_CONFIGS } from "./data/languageConfig";
+import MultiplayerBackground from "./MultiplayerBackground";
+import ServerPanel from "./server/ServerPanel.component";
+import { io, Socket } from "socket.io-client";
+import { Subject } from "rxjs";
+import {
+  ClientEvent,
+  LesserStatsUpdate,
+  ServerEvent,
+  SolveStatus,
+  StatsUpdate,
+} from "./SocketTypes";
 
 // Set to true when a backend is available again
-const MULTIPLAYER_ENABLED = false;
+const MULTIPLAYER_ENABLED =
+  process.env.REACT_APP_MULTIPLAYER_ENABLED === "true";
+
+const MULTIPLAYER_SOCKET_URL =
+  process.env.REACT_APP_MULTIPLAYER_SOCKET_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:8000"
+    : `${window.location.protocol}//api.pimantel.de`);
+
+function buildEmptyStats(): StatsStatus {
+  return {
+    totalGuesses: 0,
+    totalPlayersStarted: 0,
+    totalSolves: 0,
+    totalSolveGuesses: 0,
+    buckets: new Array(25).fill(0),
+  };
+}
+
+function mapStatsUpdateToStatus(
+  update: StatsUpdate | LesserStatsUpdate,
+  previous: StatsStatus
+): StatsStatus {
+  if (update.type === "lesser") {
+    return {
+      ...previous,
+      totalGuesses: update.totalGuesses,
+    };
+  }
+
+  return {
+    totalGuesses: update.total_guesses || 0,
+    totalPlayersStarted: update.total_players_started || 0,
+    totalSolves: update.total_solves || 0,
+    totalSolveGuesses: update.total_guesses_for_solves || 0,
+    buckets: [
+      update.solve_bucket_1_20,
+      update.solve_bucket_21_40,
+      update.solve_bucket_41_60,
+      update.solve_bucket_61_80,
+      update.solve_bucket_81_100,
+      update.solve_bucket_101_120,
+      update.solve_bucket_121_140,
+      update.solve_bucket_141_160,
+      update.solve_bucket_161_180,
+      update.solve_bucket_181_200,
+      update.solve_bucket_201_220,
+      update.solve_bucket_221_240,
+      update.solve_bucket_241_260,
+      update.solve_bucket_261_280,
+      update.solve_bucket_281_300,
+      update.solve_bucket_301_320,
+      update.solve_bucket_321_340,
+      update.solve_bucket_341_360,
+      update.solve_bucket_361_380,
+      update.solve_bucket_381_400,
+      update.solve_bucket_401_420,
+      update.solve_bucket_421_440,
+      update.solve_bucket_441_460,
+      update.solve_bucket_461_480,
+      update.solve_bucket_481_500,
+    ],
+  };
+}
 
 function App() {
   let [language] = useState<GameLanguage>("de");
@@ -51,12 +125,21 @@ function App() {
   let [plotCenter, setPlotCenter] = useState<number[]>([0, 0]);
 
   let [nextPuzzleTime, setNextPuzzleTime] = useState<Date>(new Date());
-  let [stats] = useState<StatsStatus>({
-    totalGuesses: 0,
-    totalSolves: 0,
-    totalSolveGuesses: 0,
-    buckets: [],
-  });
+  let [stats, setStats] = useState<StatsStatus>(buildEmptyStats());
+  let [socketState, setSocketState] = useState<
+    "connected" | "connecting" | "closed"
+  >("closed");
+  let [playersOnline, setPlayersOnline] = useState<number>(0);
+  let [socketGuessHandler, setSocketGuessHandler] = useState<
+    (x: number, y: number, solvedState: SolveStatus | undefined) => void
+  >(() => () => {});
+  let [socketDisconnectCallback, setSocketDisconnectCallback] = useState<
+    () => void
+  >(() => () => {});
+  const socketGuessObservable = useRef<Subject<{ x: number; y: number }>>(
+    new Subject<{ x: number; y: number }>()
+  );
+  const socketRef = useRef<Socket<ServerEvent, ClientEvent> | null>(null);
 
   let defaultLayout = {
     paper_bgcolor: "rgba(0,0,0,0)",
@@ -283,6 +366,107 @@ function App() {
     setDataRevision((old) => old + 1);
   }, [plotData, plotLayout]);
 
+  useEffect(() => {
+    if (
+      !MULTIPLAYER_ENABLED ||
+      isArchivePuzzle ||
+      currentPuzzle === "?" ||
+      parsedWords.length === 0
+    ) {
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+      setSocketState("closed");
+      setPlayersOnline(0);
+      setStats(buildEmptyStats());
+      setSocketGuessHandler(() => () => {});
+      setSocketDisconnectCallback(() => () => {});
+      return;
+    }
+
+    if (localStorage.getItem("pimantle-offline")) {
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+      setSocketState("closed");
+      setPlayersOnline(0);
+      setSocketGuessHandler(() => () => {});
+      setSocketDisconnectCallback(() => () => {});
+      return;
+    }
+
+    const playerIdStorageKey = "pimantel-player-id";
+    let playerId = localStorage.getItem(playerIdStorageKey);
+    if (!playerId) {
+      playerId = window.crypto?.randomUUID
+        ? window.crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      localStorage.setItem(playerIdStorageKey, playerId);
+    }
+
+    const socket: Socket<ServerEvent, ClientEvent> = io(MULTIPLAYER_SOCKET_URL, {
+      transports: ["websocket"],
+      auth: {
+        playerId,
+      },
+    });
+    socketRef.current = socket;
+    setSocketState("connecting");
+    setStats(buildEmptyStats());
+
+    socket.on("connect", () => {
+      setSocketState("connected");
+      socket.emit("joinGame", `${puzzleType}-${currentPuzzle}`);
+    });
+
+    socket.on("disconnect", () => {
+      setSocketState("closed");
+      setPlayersOnline(0);
+    });
+
+    socket.io.on("reconnect_attempt", () => {
+      setSocketState("connecting");
+    });
+
+    socket.io.on("reconnect_error", () => {
+      setSocketState("closed");
+    });
+
+    socket.on("playerCount", (count: number) => {
+      setPlayersOnline(count);
+    });
+
+    socket.on("newGuess", (x: number, y: number) => {
+      socketGuessObservable.current.next({ x, y });
+    });
+
+    socket.on("guessWithStats", (x: number, y: number, update) => {
+      socketGuessObservable.current.next({ x, y });
+      setStats((previous) => mapStatsUpdateToStatus(update, previous));
+    });
+
+    socket.on("statsUpdate", (update) => {
+      setStats((previous) => mapStatsUpdateToStatus(update, previous));
+    });
+
+    setSocketGuessHandler(
+      () => (x: number, y: number, solvedState: SolveStatus | undefined) => {
+        socket.emit("guess", x, y, solvedState);
+      }
+    );
+
+    setSocketDisconnectCallback(() => () => {
+      localStorage.setItem("pimantle-offline", "true");
+      setSocketState("closed");
+      socket.disconnect();
+    });
+
+    return () => {
+      if (socketRef.current === socket) {
+        socketRef.current = null;
+      }
+      socket.disconnect();
+    };
+  }, [currentPuzzle, parsedWords.length, isArchivePuzzle, puzzleType]);
+
   function centerPlot(on?: Word) {
     setBizarreEdgeCaseThingIHateIt((old) => old * -1);
     if (parsedWords) {
@@ -379,7 +563,13 @@ function App() {
         autoClose={5000}
         theme="dark"
       />
-      {/* Multiplayer disabled — re-enable by setting MULTIPLAYER_ENABLED = true */}
+      {socketState === "connected" && (
+        <MultiplayerBackground
+          xRange={displayedXRange}
+          yRange={displayedYRange}
+          guessObservable={socketGuessObservable}
+        />
+      )}
       <div className="header">
         <span className="header-left" />
         <span
@@ -390,7 +580,15 @@ function App() {
           {puzzleType === "semantle" ? "Semantle" : "Pimantel"} #{currentPuzzle}{" "}
           {isArchivePuzzle && "(Archiv-Rätsel)"}
         </span>
-        <span className="header-right" />
+        <span className="header-right">
+          {MULTIPLAYER_ENABLED && !isArchivePuzzle && (
+            <ServerPanel
+              socketState={socketState}
+              playersOnline={playersOnline}
+              socketDisconnectCallback={socketDisconnectCallback}
+            />
+          )}
+        </span>
       </div>
       <ArchiveDropdown
         isOpen={archiveOpen}
@@ -411,8 +609,8 @@ function App() {
               puzzleType={puzzleType}
               currentPuzzle={currentPuzzle}
               stats={stats}
-              socketState={"closed"}
-              socketGuessHandler={() => {}}
+              socketState={socketState}
+              socketGuessHandler={socketGuessHandler}
               scroller={scroller}
               hoverEnabled={hoverEnabled}
               plotData={plotData}
@@ -462,6 +660,3 @@ function App() {
 }
 
 export default App;
-function copyVictory(arg0: boolean): void {
-  throw new Error("Function not implemented.");
-}

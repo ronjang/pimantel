@@ -27,6 +27,7 @@ export type LesserStatsUpdate = {
 export type StatsUpdate = {
   type: "greater";
   total_guesses: number;
+  total_players_started: number;
   total_solves: number;
   total_guesses_for_solves: number;
   solve_bucket_1_20: number;

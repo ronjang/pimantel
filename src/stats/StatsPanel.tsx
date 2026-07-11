@@ -30,14 +30,32 @@ function StatsPanel({
       <table>
         <thead>
           <tr>
-            <th>Tipps</th>
-            <th>Lösungen</th>
-            <th>Ø Tipps</th>
+            <th>Tipps gesamt</th>
+            <th>Spieler gestartet</th>
+            <th>Ø Tipps bisher</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>{stats.totalGuesses.toLocaleString()}</td>
+            <td>{stats.totalPlayersStarted.toLocaleString()}</td>
+            <td>
+              {stats.totalPlayersStarted > 0
+                ? (stats.totalGuesses / stats.totalPlayersStarted).toFixed(1)
+                : "--"}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Lösungen</th>
+            <th>Ø Tipps bis Lösung</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
             <td>{stats.totalSolves.toLocaleString()}</td>
             <td>
               {stats.totalSolves > 0
@@ -76,7 +94,7 @@ function StatsPanel({
               },
             },
             hovertemplate:
-              "<b>%{x}+ Tipps, %{y} Lösung(en)</b><extra></extra>",
+              "<b>%{x}+ Tipps, %{y} Spieler</b><extra></extra>",
           },
         ]}
         layout={{

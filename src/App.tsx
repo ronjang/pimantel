@@ -413,6 +413,7 @@ function App() {
     if (!cached) {
       setStats(buildEmptyStats());
       setStatsLoaded(false);
+      statsLoadedRef.current = false;
       return;
     }
 
@@ -420,9 +421,11 @@ function App() {
       const parsed = JSON.parse(cached) as StatsStatus;
       setStats(parsed);
       setStatsLoaded(true);
+      statsLoadedRef.current = true;
     } catch {
       setStats(buildEmptyStats());
       setStatsLoaded(false);
+      statsLoadedRef.current = false;
     }
   }, [currentPuzzle, puzzleType]);
 

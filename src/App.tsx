@@ -40,10 +40,21 @@ const MULTIPLAYER_SOCKET_URL =
   (window.location.hostname === "localhost"
     ? "http://localhost:8000"
     : `${window.location.protocol}//api.pimantel.de`);
-const FRONTEND_VERSION = (process.env.REACT_APP_VERSION || "dev").slice(0, 8);
+
+const FRONTEND_COMMIT_SHA = process.env.REACT_APP_VERSION || "dev";
+const FRONTEND_SEMVER = process.env.REACT_APP_SEMVER || "0.1.0";
 const FRONTEND_VERSION_URL =
   process.env.REACT_APP_VERSION_URL ||
   "https://github.com/ronjang/pimantel/commits/main";
+
+function buildFrontendVersionLabel() {
+  const shortSha = FRONTEND_COMMIT_SHA.slice(0, 8);
+  if (shortSha === "dev") {
+    return `${FRONTEND_SEMVER}+dev`;
+  }
+
+  return `${FRONTEND_SEMVER}+${shortSha}`;
+}
 
 function generatePlayerId(): string {
   const cryptoApi = window.crypto;
@@ -64,6 +75,7 @@ function buildEmptyStats(): StatsStatus {
     totalPlayersStarted: 0,
     totalSolves: 0,
     totalSolveGuesses: 0,
+    lowestSolveGuesses: null,
     buckets: new Array(25).fill(0),
   };
 }
@@ -84,6 +96,7 @@ function mapStatsUpdateToStatus(
     totalPlayersStarted: update.total_players_started || 0,
     totalSolves: update.total_solves || 0,
     totalSolveGuesses: update.total_guesses_for_solves || 0,
+    lowestSolveGuesses: update.lowest_guesses_to_solve,
     buckets: [
       update.solve_bucket_1_20,
       update.solve_bucket_21_40,
@@ -303,7 +316,7 @@ function App() {
           let dataView = new DataView(buffer);
           let offset = 4;
           let parsedWords: Word[] = [];
-          let rank = 0;
+          let rank = 1;
           while (offset < buffer.byteLength) {
             let index = dataView.getUint32(offset, true);
             offset += 4;
@@ -735,8 +748,6 @@ function App() {
               socketState={socketState}
               playersOnline={playersOnline}
               socketDisconnectCallback={socketDisconnectCallback}
-              frontendVersion={FRONTEND_VERSION}
-              frontendVersionUrl={FRONTEND_VERSION_URL}
             />
           )}
         </span>
@@ -745,6 +756,8 @@ function App() {
         isOpen={archiveOpen}
         close={() => setArchiveOpen(false)}
         archivePimantles={archivePimantles}
+        frontendVersionLabel={buildFrontendVersionLabel()}
+        frontendVersionUrl={FRONTEND_VERSION_URL}
       />
       <SettingsDropdown
         isOpen={settingsOpen}

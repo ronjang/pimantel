@@ -34,12 +34,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Read app version
+        id: app_version
+        run: echo "value=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+
       - name: Build
         env:
           CI: "false"
           GENERATE_SOURCEMAP: "false"
           REACT_APP_MULTIPLAYER_ENABLED: "true"
           REACT_APP_MULTIPLAYER_SOCKET_URL: "https://api.pimantel.de"
+          REACT_APP_SEMVER: "${{ steps.app_version.outputs.value }}"
           REACT_APP_VERSION: "${{ github.sha }}"
           REACT_APP_VERSION_URL: "https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
         run: npm run build

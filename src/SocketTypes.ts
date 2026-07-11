@@ -39,6 +39,7 @@ export type StatsUpdate = {
   total_players_started: number;
   total_solves: number;
   total_guesses_for_solves: number;
+  lowest_guesses_to_solve: number | null;
   solve_bucket_1_20: number;
   solve_bucket_21_40: number;
   solve_bucket_41_60: number;

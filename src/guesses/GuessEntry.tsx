@@ -9,7 +9,7 @@ function GuessEntry({
   animated?: boolean;
 }) {
   function getFlavorText(rank: number): string {
-    if (rank === 0) {
+    if (rank === 1) {
       return "GELÖST! 🎯";
     } else if (rank < 10) {
       return "🔥🔥🔥";
@@ -39,7 +39,7 @@ function GuessEntry({
   }
 
   function getColorClass(rank: number) {
-    if (rank === 0) {
+    if (rank === 1) {
       return "bg-correct";
     } else if (rank < 10) {
       return "bg-very-hot";
@@ -63,7 +63,7 @@ function GuessEntry({
   return (
     <div
       className={`guess-wrapper ${
-        animated && !guess.isBulk && guess.rank !== 0 ? "slide-in" : ""
+        animated && !guess.isBulk && guess.rank !== 1 ? "slide-in" : ""
       }`}
     >
       <div
@@ -80,7 +80,7 @@ function GuessEntry({
             guess.rank < 1000 ? "guess-rank" : "guess-rank-placeholder"
           }
         >
-          {guess.rank !== 0 && (guess.rank < 1000 ? "#" + guess.rank : "--")}
+          {guess.rank !== 1 && (guess.rank < 1000 ? "#" + guess.rank : "--")}
         </div>
         <div className="guess-flavor">
           {guess.isEgg

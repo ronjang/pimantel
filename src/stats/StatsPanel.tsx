@@ -26,18 +26,26 @@ function StatsPanel({
       <table>
         <thead>
           <tr>
+            <th>Ø Tipps</th>
+            <th>Bestes Ergebnis</th>
             <th>Spieler gelöst</th>
-            <th>Ø Tipps bis Lösung</th>
+            <th>Spieler versucht</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>{stats.totalSolves.toLocaleString()}</td>
             <td>
-              {stats.totalSolves > 0
-                ? (stats.totalSolveGuesses / stats.totalSolves).toFixed(1)
+              {stats.totalPlayersStarted > 0
+                ? (stats.totalGuesses / stats.totalPlayersStarted).toFixed(1)
                 : "--"}
             </td>
+            <td>
+              {stats.lowestSolveGuesses !== null
+                ? stats.lowestSolveGuesses.toLocaleString()
+                : "--"}
+            </td>
+            <td>{stats.totalSolves.toLocaleString()}</td>
+            <td>{stats.totalPlayersStarted.toLocaleString()}</td>
           </tr>
         </tbody>
       </table>
@@ -69,7 +77,7 @@ function StatsPanel({
                 family: "var(--body-font)",
               },
             },
-            hovertemplate: "<b>%{x}+ Tipps, %{y} Lösung(en)</b><extra></extra>",
+            hovertemplate: "<b>%{x}+ Tipps, %{y} Spieler</b><extra></extra>",
           },
         ]}
         layout={{
@@ -98,13 +106,13 @@ function StatsPanel({
               type: "line",
               name: "Par",
               x0:
-                stats.totalSolves === 0
+                stats.totalPlayersStarted === 0
                   ? 0
-                  : stats.totalSolveGuesses / stats.totalSolves,
+                  : stats.totalGuesses / stats.totalPlayersStarted,
               x1:
-                stats.totalSolves === 0
+                stats.totalPlayersStarted === 0
                   ? 0
-                  : stats.totalSolveGuesses / stats.totalSolves,
+                  : stats.totalGuesses / stats.totalPlayersStarted,
               y0: 0,
               y1: 1,
               yref: "paper",

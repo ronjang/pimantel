@@ -3,5 +3,6 @@ export type StatsStatus = {
   totalPlayersStarted: number;
   totalSolves: number;
   totalSolveGuesses: number;
+  lowestSolveGuesses: number | null;
   buckets: number[];
 };

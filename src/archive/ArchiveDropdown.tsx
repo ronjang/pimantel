@@ -5,12 +5,16 @@ export type ArchiveDropdownProps = {
   isOpen: boolean;
   close: () => void;
   archivePimantles: ArchiveLink[];
+  frontendVersionLabel: string;
+  frontendVersionUrl: string;
 };
 
 function ArchiveDropdown({
   isOpen,
   close,
   archivePimantles,
+  frontendVersionLabel,
+  frontendVersionUrl,
 }: ArchiveDropdownProps) {
   return (
     <div className={`archive-overlay ${isOpen ? "archive-open" : ""}`}>
@@ -70,6 +74,18 @@ function ArchiveDropdown({
               className="archive-text-link"
             >
               Pimantle von pimanrules
+            </a>
+          </div>
+          <h2 className="archive-subheading">Version</h2>
+          <div className="social-panel">
+            <a
+              href={frontendVersionUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="archive-text-link"
+              title={`Frontend Version ${frontendVersionLabel}`}
+            >
+              {frontendVersionLabel}
             </a>
           </div>
         </div>

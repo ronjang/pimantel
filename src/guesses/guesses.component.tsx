@@ -122,7 +122,7 @@ function Guesses({
 
   function getGoodHint() {
     let bestGuess = guesses[guesses.length - 1];
-    if (bestGuess.rank == 1) {
+    if (bestGuess.rank == 2) {
       toast.error("Du hast schon den besten Hinweis!");
       return;
     }
@@ -277,7 +277,7 @@ function Guesses({
 
       let puzzleJustSolved = false;
 
-      if (newGuessObjects.some((guess) => guess.rank === 0)) {
+      if (newGuessObjects.some((guess) => guess.rank === 1)) {
         const savePuzzleSolved = () => {
           localStorage.setItem(
             `${puzzleType}-${currentPuzzle}-solved`,
@@ -458,7 +458,7 @@ function Guesses({
             />
           )}
           {guesses.filter((g) => g.isHint).length > 6 &&
-            !guesses.some((guess) => guess.rank === 1) && (
+            !guesses.some((guess) => guess.rank === 2) && (
               <input
                 type="button"
                 value="Guter Hinweis"

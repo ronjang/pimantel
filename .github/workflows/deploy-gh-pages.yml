@@ -40,6 +40,8 @@ jobs:
           GENERATE_SOURCEMAP: "false"
           REACT_APP_MULTIPLAYER_ENABLED: "true"
           REACT_APP_MULTIPLAYER_SOCKET_URL: "https://api.pimantel.de"
+          REACT_APP_VERSION: "${{ github.sha }}"
+          REACT_APP_VERSION_URL: "https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
         run: npm run build
 
       - name: Publish to gh-pages

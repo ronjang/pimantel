@@ -2,10 +2,14 @@ function ServerPanel({
   socketState,
   playersOnline,
   socketDisconnectCallback,
+  frontendVersion,
+  frontendVersionUrl,
 }: {
   socketState: string;
   playersOnline: number;
   socketDisconnectCallback: () => void;
+  frontendVersion: string;
+  frontendVersionUrl: string;
 }) {
   return (
     <div className="server-panel">
@@ -42,6 +46,15 @@ function ServerPanel({
           }}
         />
       )}
+      <a
+        className="frontend-version"
+        href={frontendVersionUrl}
+        target="_blank"
+        rel="noreferrer"
+        title={`Frontend Version ${frontendVersion}`}
+      >
+        v{frontendVersion}
+      </a>
     </div>
   );
 }

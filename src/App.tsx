@@ -40,6 +40,10 @@ const MULTIPLAYER_SOCKET_URL =
   (window.location.hostname === "localhost"
     ? "http://localhost:8000"
     : `${window.location.protocol}//api.pimantel.de`);
+const FRONTEND_VERSION = (process.env.REACT_APP_VERSION || "dev").slice(0, 8);
+const FRONTEND_VERSION_URL =
+  process.env.REACT_APP_VERSION_URL ||
+  "https://github.com/ronjang/pimantel/commits/main";
 
 function generatePlayerId(): string {
   const cryptoApi = window.crypto;
@@ -731,6 +735,8 @@ function App() {
               socketState={socketState}
               playersOnline={playersOnline}
               socketDisconnectCallback={socketDisconnectCallback}
+              frontendVersion={FRONTEND_VERSION}
+              frontendVersionUrl={FRONTEND_VERSION_URL}
             />
           )}
         </span>

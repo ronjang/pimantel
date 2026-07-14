@@ -18,6 +18,7 @@ as CI artifacts so the daily job doesn't recompute t-SNE.
 
 import json
 import math
+import os
 import sys
 from pathlib import Path
 
@@ -30,7 +31,9 @@ from tqdm import tqdm
 # ── Configuration ──────────────────────────────────────────────────────────────
 
 MIN_FREQUENCY = 50
-MAX_VOCAB = 50_000  # keep the download small; t-SNE cost grows with this
+MAX_VOCAB = int(
+    os.getenv("PIMANTEL_MAX_VOCAB", "80000")
+)  # tuned for better coverage while remaining CI-feasible
 
 REPO_ROOT = Path(__file__).parent.parent
 OUT_WORD_LIST = REPO_ROOT / "src" / "data" / "word_list_de.json"

@@ -31,9 +31,12 @@ from tqdm import tqdm
 # ── Configuration ──────────────────────────────────────────────────────────────
 
 MIN_FREQUENCY = 50
-MAX_VOCAB = int(
-    os.getenv("PIMANTEL_MAX_VOCAB", "80000")
-)  # tuned for better coverage while remaining CI-feasible
+# 0 means "auto-max": use the highest value that fits the memory safety model.
+REQUESTED_MAX_VOCAB = int(os.getenv("PIMANTEL_MAX_VOCAB", "0"))
+TSNE_PERPLEXITY = 30
+MEMORY_USAGE_FRACTION = float(os.getenv("PIMANTEL_TSNE_MEMORY_FRACTION", "0.75"))
+# Reserve for model object, Python/runtime overhead, and temporary allocations.
+FIXED_MEMORY_RESERVE_BYTES = int(2.5 * (1024**3))
 
 REPO_ROOT = Path(__file__).parent.parent
 OUT_WORD_LIST = REPO_ROOT / "src" / "data" / "word_list_de.json"
@@ -80,6 +83,47 @@ def normalize_german(word: str) -> str:
     )
 
 
+def get_total_memory_bytes() -> int | None:
+    """Returns total RAM in bytes when discoverable, else None."""
+    try:
+        pages = os.sysconf("SC_PHYS_PAGES")
+        page_size = os.sysconf("SC_PAGE_SIZE")
+        if isinstance(pages, int) and isinstance(page_size, int) and pages > 0 and page_size > 0:
+            return pages * page_size
+    except (AttributeError, OSError, ValueError):
+        pass
+    return None
+
+
+def theoretical_max_vocab(vector_size: int) -> int | None:
+    """
+    Conservative memory-based upper bound for Barnes-Hut t-SNE on runner hardware.
+
+    This estimates a per-word memory footprint from:
+    - word vectors + t-SNE working copies
+    - sparse neighbor graph/probability storage (~3 * perplexity neighbors)
+    - optimizer/intermediate buffers
+    """
+    total_mem = get_total_memory_bytes()
+    if not total_mem:
+        return None
+
+    # float32 vectors + additional working copies used by sklearn internals.
+    vector_working_bytes = vector_size * 4 * 2
+    # Distances + indices + sparse bookkeeping per neighbor relation.
+    neighbors_per_word = 3 * TSNE_PERPLEXITY
+    neighbor_graph_bytes = neighbors_per_word * 20
+    optimizer_and_misc_bytes = 2_048
+    estimated_per_word_bytes = (
+        vector_working_bytes + neighbor_graph_bytes + optimizer_and_misc_bytes
+    )
+
+    usable_mem = int(total_mem * MEMORY_USAGE_FRACTION) - FIXED_MEMORY_RESERVE_BYTES
+    if usable_mem <= 0:
+        return 1
+    return max(1, usable_mem // estimated_per_word_bytes)
+
+
 def build_vocab(kv: KeyedVectors) -> list[tuple[str, int, str]]:
     """
     Builds a deduplicated vocabulary.
@@ -120,8 +164,33 @@ def build_vocab(kv: KeyedVectors) -> list[tuple[str, int, str]]:
 
     entries = list(best.values())
     entries.sort(key=lambda x: x[1], reverse=True)
-    if MAX_VOCAB:
-        entries = entries[:MAX_VOCAB]
+
+    memory_cap = theoretical_max_vocab(kv.vector_size)
+    if REQUESTED_MAX_VOCAB > 0:
+        selected_cap = REQUESTED_MAX_VOCAB
+        if memory_cap is not None:
+            selected_cap = min(selected_cap, memory_cap)
+    else:
+        selected_cap = memory_cap if memory_cap is not None else len(entries)
+
+    selected_cap = min(selected_cap, len(entries))
+    entries = entries[:selected_cap]
+
+    if memory_cap is not None:
+        print(
+            "Vocab cap selection:"
+            f" requested={REQUESTED_MAX_VOCAB or 'auto-max'},"
+            f" theoretical_memory_max={memory_cap},"
+            f" selected={selected_cap}"
+        )
+    else:
+        print(
+            "Vocab cap selection:"
+            f" requested={REQUESTED_MAX_VOCAB or 'auto-max'},"
+            f" theoretical_memory_max=unknown,"
+            f" selected={selected_cap}"
+        )
+
     print(f"Vocabulary size (deduplicated): {len(entries)}")
     # Return (display, count, model_key) tuples
     return entries
@@ -138,7 +207,13 @@ def compute_tsne_angles(vectors: np.ndarray) -> np.ndarray:
     array of angles in radians.
     """
     print("Running 1D t-SNE (this is the slow part) ...")
-    tsne = TSNE(n_components=1, perplexity=30, max_iter=500, random_state=42, verbose=1)
+    tsne = TSNE(
+        n_components=1,
+        perplexity=TSNE_PERPLEXITY,
+        max_iter=500,
+        random_state=42,
+        verbose=1,
+    )
     tsne_1d = tsne.fit_transform(vectors).flatten()
 
     lo, hi = tsne_1d.min(), tsne_1d.max()

@@ -326,7 +326,8 @@ function App() {
           let offset = 4;
           let parsedWords: Word[] = [];
           let rank = 1;
-          while (offset < buffer.byteLength) {
+          let skippedInvalidEntries = 0;
+          while (offset + 14 <= buffer.byteLength) {
             let index = dataView.getUint32(offset, true);
             offset += 4;
             let x = dataView.getFloat32(offset, true);
@@ -335,10 +336,17 @@ function App() {
             offset += 4;
             let similarity = getFloat16(dataView, offset, true) * 100;
             offset += 2;
+
+            const wordEntry = wordList[index];
+            if (!wordEntry) {
+              skippedInvalidEntries++;
+              continue;
+            }
+
             parsedWords.push({
               index: index,
-              word: wordList[index][0] as string,
-              frequency: wordList[index][1] as number,
+              word: wordEntry[0] as string,
+              frequency: wordEntry[1] as number,
               similarity: similarity,
               x: x,
               y: y,
@@ -346,7 +354,22 @@ function App() {
             });
             rank++;
           }
-          setSecret(parsedWords[0]);
+          if (parsedWords.length === 0) {
+            console.error(
+              "Puzzle data could not be parsed (empty or mismatched dataset)."
+            );
+            setLanguageDataAvailable(false);
+            return;
+          }
+
+          if (skippedInvalidEntries > 0) {
+            console.warn(
+              `Skipped ${skippedInvalidEntries} invalid puzzle entries due to dataset mismatch.`
+            );
+          }
+
+          const secretWord = parsedWords[0];
+          setSecret(secretWord);
           let newXValues = parsedWords.map((word) => word.x);
           setXValues(newXValues);
           let newYValues = parsedWords.map((word) => word.y);
@@ -374,8 +397,8 @@ function App() {
               hoverinfo: "skip",
             },
             {
-              x: [parsedWords[0].x],
-              y: [parsedWords[0].y],
+              x: [secretWord.x],
+              y: [secretWord.y],
               mode: "markers",
               type: "scatter",
               marker: {

@@ -48,6 +48,10 @@ jobs:
           REACT_APP_SEMVER: "${{ steps.app_version.outputs.value }}"
           REACT_APP_VERSION: "${{ github.sha }}"
           REACT_APP_VERSION_URL: "https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          # Analytics stay off until the UMAMI_WEBSITE_ID repo variable is set.
+          REACT_APP_UMAMI_WEBSITE_ID: "${{ vars.UMAMI_WEBSITE_ID }}"
+          REACT_APP_UMAMI_SCRIPT_URL: "https://stats.pimantel.de/s/script.js"
+          REACT_APP_UMAMI_DOMAINS: "pimantel.de,www.pimantel.de"
         run: npm run build
 
       - name: Publish to gh-pages

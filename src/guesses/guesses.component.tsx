@@ -15,6 +15,7 @@ import {
 } from "../puzzle/puzzle.component";
 import { PuzzleType, SavedPuzzleProgress } from "../puzzle/puzzle.model";
 import { SolveStatus } from "../SocketTypes";
+import { trackEvent } from "../telemetry/umami";
 import StatsPanel from "../stats/StatsPanel";
 import WelcomePanel from "./WelcomePanel";
 import { Word, SubmitGuessesParams } from "./guesses.model";
@@ -301,6 +302,14 @@ function Guesses({
       }
 
       if (!isAutomated && newGuessObjects.length) {
+        const puzzleId = `${puzzleType}-${currentPuzzle}`;
+        if (guessCount === newGuessObjects.length) {
+          trackEvent("puzzle-started", { puzzle: puzzleId });
+        }
+        if (puzzleJustSolved) {
+          trackEvent("puzzle-solved", { puzzle: puzzleId, guesses: guessCount });
+        }
+
         socketGuessHandler(
           newGuessObjects[0].x,
           newGuessObjects[0].y,

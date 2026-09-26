@@ -306,8 +306,10 @@ function App() {
             puzzleType === "pimantle"
               ? langConfig.secretWordsFolder
               : langConfig.semantleWordsFolder
-          }/secret_word_${newPuzzleNumber}.bin?3`,
-          { cache: "force-cache" }
+          }/secret_word_${newPuzzleNumber}.bin?4`,
+          // Revalidate instead of force-cache: force-cache reuses stale entries,
+          // including a 404 cached while a puzzle wasn't deployed yet.
+          { cache: "no-cache" }
         )
         .then((response) => {
           if (!response.ok) {

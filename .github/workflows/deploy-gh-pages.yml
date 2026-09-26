@@ -11,6 +11,12 @@ on:
       - "tsconfig.json"
       - ".github/workflows/deploy-gh-pages.yml"
   workflow_dispatch: {}
+  # Commits pushed by the daily puzzle job use GITHUB_TOKEN, which never
+  # triggers push workflows, so redeploy after each successful puzzle run.
+  workflow_run:
+    workflows: ["Daily German Puzzle"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: write
@@ -21,6 +27,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -48,6 +55,10 @@ jobs:
           REACT_APP_SEMVER: "${{ steps.app_version.outputs.value }}"
           REACT_APP_VERSION: "${{ github.sha }}"
           REACT_APP_VERSION_URL: "https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+          # Analytics stay off until the UMAMI_WEBSITE_ID repo variable is set.
+          REACT_APP_UMAMI_WEBSITE_ID: "${{ vars.UMAMI_WEBSITE_ID }}"
+          REACT_APP_UMAMI_SCRIPT_URL: "https://stats.pimantel.de/s/script.js"
+          REACT_APP_UMAMI_DOMAINS: "pimantel.de,www.pimantel.de"
         run: npm run build
 
       - name: Publish to gh-pages

@@ -11,6 +11,12 @@ on:
       - "tsconfig.json"
       - ".github/workflows/deploy-gh-pages.yml"
   workflow_dispatch: {}
+  # Commits pushed by the daily puzzle job use GITHUB_TOKEN, which never
+  # triggers push workflows, so redeploy after each successful puzzle run.
+  workflow_run:
+    workflows: ["Daily German Puzzle"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: write
@@ -21,6 +27,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
